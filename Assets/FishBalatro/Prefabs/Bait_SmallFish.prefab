@@ -130,7 +130,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -195,6 +195,7 @@ GameObject:
   - component: {fileID: 3245012305362930620}
   - component: {fileID: 6976614537978735032}
   - component: {fileID: 1019721474883210516}
+  - component: {fileID: 2301634525215067817}
   m_Layer: 0
   m_Name: Bait_SmallFish
   m_TagString: Untagged
@@ -328,3 +329,25 @@ MonoBehaviour:
   baitType: 3
   spriteRenderer: {fileID: 3245012305362930620}
   label: {fileID: 8498490714791947893}
+--- !u!95 &2301634525215067817
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5963144123154046933}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: dc4d7ebe1fbd34c7692327fb22ec3e88, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

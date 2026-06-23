@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4327081569576346604}
   - component: {fileID: 4353398215004344290}
   - component: {fileID: 2377535246410614725}
+  - component: {fileID: 6116429867249428310}
   m_Layer: 0
   m_Name: Bait_Worm
   m_TagString: Untagged
@@ -145,6 +146,28 @@ MonoBehaviour:
   baitType: 0
   spriteRenderer: {fileID: 4327081569576346604}
   label: {fileID: 5062789053311350025}
+--- !u!95 &6116429867249428310
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4360708511774717258}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: d4f036377232942d8a8f125126ddfa75, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6072961923712705412
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,7 +298,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

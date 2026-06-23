@@ -130,7 +130,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -195,6 +195,7 @@ GameObject:
   - component: {fileID: 3641631174234107097}
   - component: {fileID: 1918688596106694374}
   - component: {fileID: 3610761728146596503}
+  - component: {fileID: 719303313555573733}
   m_Layer: 0
   m_Name: Bait_Shrimp
   m_TagString: Untagged
@@ -328,3 +329,25 @@ MonoBehaviour:
   baitType: 1
   spriteRenderer: {fileID: 3641631174234107097}
   label: {fileID: 6784386744866614993}
+--- !u!95 &719303313555573733
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4861469409397933246}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 7e76c31ce58fd4e0998b8ca04d8241eb, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 1
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
