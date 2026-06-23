@@ -40,11 +40,8 @@ public static class FishBalatroStartupSceneLoader
         changed |= ApplySprite("Water Background", "water_panel", Color.white);
         changed |= ApplySprite("Boat", "boat", Color.white);
         changed |= ApplySprite("Fisherman", "fisherman", Color.white);
-        changed |= ApplySprite("Idle Hook", "hook", Color.white);
         changed |= ApplySprite("Player Fish", "player_fish", Color.white);
         changed |= ApplySprite("Big Fish Ally", "big_fish", Color.white);
-        changed |= ApplySprite("Line Snag Rock A", "rock", Color.white);
-        changed |= ApplySprite("Line Snag Rock B", "rock", Color.white);
 
         if (changed)
         {

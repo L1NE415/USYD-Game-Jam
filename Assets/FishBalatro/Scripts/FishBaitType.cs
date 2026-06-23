@@ -15,7 +15,7 @@ public enum FishBaitType
 public enum FishGameState
 {
     Normal,
-    Hooked,
+    NetSweep,
     Recovering,
     Caught,
     BigFishAttack

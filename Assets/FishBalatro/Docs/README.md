@@ -20,10 +20,10 @@ or use the menu shortcut above.
 2. Touch bait to steal it and build score, multiplier, next-bait bonuses, and Alert.
 3. Score is usable immediately, but the current streak is still at risk.
 4. Press `E` at any time to spend score and make the big fish attack the fisherman.
-5. If Alert reaches 100%, the fisherman hooks the player.
-6. Wiggle left/right and dash during red line warnings to break Hook Grip.
-7. Escaping keeps your score. Reaching the water surface loses the current at-risk streak.
-8. After an attack, the fisherman flees and a new fisherman arrives as the next level.
+5. If Alert reaches 100%, the fisherman drops a large pendulum net.
+6. Swim or dash out of the sweeping net before it crosses the water.
+7. Dodging keeps your total score and clears the current at-risk streak. Getting netted loses the current at-risk streak.
+8. After a big fish attack, the fisherman flees and a new fisherman arrives as the next level.
 
 ## Controls
 
@@ -40,6 +40,14 @@ or use the menu shortcut above.
 - Golden Shrimp: `+100`, `+35 Alert`
 - Fake Bait: `+0`, `+50 Alert`
 
+## Bait Spawning
+
+- Each level has a finite bait budget, so bait is not an infinite score source.
+- The spawner keeps about `6-8` bait pieces active, depending on level.
+- Bait must spawn away from the player and away from other bait, which prevents accidental chain pickups.
+- Bait is blocked from the lower-left big fish area, so it will not appear under the ally sprite or prompt.
+- If a level runs completely dry and the player still cannot afford an attack, the spawner gives one small emergency refill.
+
 ## Big Fish Mechanic
 
 The big fish is now a level-gating ally, not a banking/safe-zone mechanic. It
@@ -50,15 +58,27 @@ with `E` from anywhere.
 - Cost increases by `140` every level.
 - Calling the big fish spends score, clears the current run state, resets Alert/combo pressure, makes the current fisherman flee, and starts the next level with fresh bait.
 
+## Net Sweep Hazard
+
+Alert is no longer a grab minigame. At `100%` Alert, the fisherman
+briefly warns the player, then a large net sweeps across roughly half of the
+screen like a pendulum.
+
+- The net is generated at runtime by `NetSweepHazard`, so no separate net art is required yet.
+- During the yellow warning phase, the net is visible but not dangerous.
+- During the cyan sweep phase, touching the net catches the player and loses `CurrentRunScore`.
+- If the player dodges the sweep, `TotalScore` is kept and Alert/combo pressure resets.
+
 ## Code Map
 
-- `FishGameManager`: central game state, scoring, hook escape, and big fish level transition.
+- `FishGameManager`: central game state, scoring, net sweep resolution, and big fish level transition.
 - `FishPlayerController`: small fish movement, dash, arena bounds, and input compatibility.
 - `BaitPickup`: bait collision and the bait stat table.
 - `BaitSpawner`: weighted bait spawning and level-based bait count.
+- `NetSweepHazard`: runtime-built pendulum net visual, timing, and catch hitbox.
 - `BigFishAlly`: big fish prompt and attack animation.
 - `FishermanController`: fisherman warning visuals and flee/return animation.
-- `FishingLineView`: visible fishing line during hook escape.
+- `FishingLineView`: optional line telegraph helper, currently hidden in the net-sweep loop.
 - `FishUIController`: copies game values into UI text and bars.
 - `FloatingText`: temporary score/effect popups.
 - `FishBalatroSceneBuilder`: editor rebuild tool for generated art, prefabs, and `Main.unity`.
@@ -73,8 +93,7 @@ with `E` from anywhere.
 
 ## Next Best Upgrades
 
-- Add line snagging on rocks/coral during the Hooked state.
 - Add bite input timing instead of automatic pickup on touch.
 - Add fisherman variants per level.
 - Replace generated placeholder sprites with final pixel art.
-- Add sound effects for bait pops, warning pulse, line snap, and big fish attack.
+- Add sound effects for bait pops, warning pulse, net sweep, and big fish attack.

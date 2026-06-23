@@ -10,12 +10,24 @@ public class BaitSpawner : MonoBehaviour
     public BaitPickup[] baitPrefabs;
     public Vector2 spawnMin = new Vector2(-6.9f, -2.8f);
     public Vector2 spawnMax = new Vector2(7.1f, 2.7f);
-    public int baseMaxBaits = 8;
-    public float spawnInterval = 0.8f;
-    public float minDistanceFromPlayer = 1.2f;
+    public int baseMaxBaits = 6;
+    public int maxActiveBaits = 8;
+    public float spawnInterval = 1.1f;
+    public float minDistanceFromPlayer = 1.8f;
+    public float minDistanceBetweenBaits = 1.55f;
+    public Vector2 bigFishBlockCenter = new Vector2(-6.35f, -2.85f);
+    public Vector2 bigFishBlockSize = new Vector2(5.25f, 2.8f);
+    public int baseLevelBaitBudget = 16;
+    public int baitBudgetPerLevel = 3;
+    public int maxLevelBaitBudget = 24;
+    public int emergencyBaitBudget = 4;
 
     private readonly List<BaitPickup> activeBaits = new List<BaitPickup>();
     private float spawnTimer;
+    private int budgetLevel;
+    private int levelBaitBudget;
+    private int spawnedThisLevel;
+    private bool emergencyBudgetUsed;
 
     private void Update()
     {
@@ -27,13 +39,22 @@ public class BaitSpawner : MonoBehaviour
             return;
         }
 
-        spawnTimer -= Time.deltaTime;
-        // Later levels allow a few more bait pieces on screen at once.
-        int maxBaits = baseMaxBaits + Mathf.Min(4, gameManager.Level - 1);
+        EnsureBudgetForCurrentLevel();
 
-        if (activeBaits.Count < maxBaits && spawnTimer <= 0f)
+        spawnTimer -= Time.deltaTime;
+        int targetActiveBaits = GetTargetActiveBaits();
+        AddEmergencyBudgetIfNeeded();
+
+        if (activeBaits.Count < targetActiveBaits && spawnedThisLevel < levelBaitBudget && spawnTimer <= 0f)
         {
-            SpawnBait();
+            if (!SpawnBait())
+            {
+                // If the arena is too crowded for the spacing rules, wait a
+                // short beat and try again after the player moves/eats bait.
+                spawnTimer = 0.25f;
+                return;
+            }
+
             spawnTimer = spawnInterval;
         }
     }
@@ -41,10 +62,19 @@ public class BaitSpawner : MonoBehaviour
     public void SpawnOpeningBaits(int count)
     {
         // Used at the start of a level so the arena is immediately playable.
-        for (int i = 0; i < count; i++)
+        // This also resets the finite bait budget for the new fisherman.
+        BeginLevelBudget();
+        int openingCount = Mathf.Min(count, GetTargetActiveBaits(), levelBaitBudget);
+
+        for (int i = 0; i < openingCount; i++)
         {
-            SpawnBait();
+            if (!SpawnBait())
+            {
+                break;
+            }
         }
+
+        spawnTimer = spawnInterval;
     }
 
     public void ClearBaits()
@@ -62,11 +92,55 @@ public class BaitSpawner : MonoBehaviour
         activeBaits.Clear();
     }
 
-    private void SpawnBait()
+    private void BeginLevelBudget()
+    {
+        int level = gameManager != null ? gameManager.Level : 1;
+        budgetLevel = level;
+        levelBaitBudget = Mathf.Min(maxLevelBaitBudget, baseLevelBaitBudget + (level - 1) * baitBudgetPerLevel);
+        spawnedThisLevel = 0;
+        emergencyBudgetUsed = false;
+    }
+
+    private void EnsureBudgetForCurrentLevel()
+    {
+        int level = gameManager != null ? gameManager.Level : 1;
+        if (budgetLevel != level || levelBaitBudget <= 0)
+        {
+            BeginLevelBudget();
+        }
+    }
+
+    private int GetTargetActiveBaits()
+    {
+        int level = gameManager != null ? gameManager.Level : 1;
+        int levelBonus = Mathf.Min(2, level - 1);
+        return Mathf.Clamp(baseMaxBaits + levelBonus, 1, maxActiveBaits);
+    }
+
+    private void AddEmergencyBudgetIfNeeded()
+    {
+        // Prevent a hard lock if the player spends the whole level budget but
+        // still cannot afford the attack. This is once per level, so bait never
+        // becomes an infinite score faucet.
+        if (emergencyBudgetUsed || activeBaits.Count > 0 || spawnedThisLevel < levelBaitBudget)
+        {
+            return;
+        }
+
+        if (gameManager != null && gameManager.TotalScore < gameManager.AttackCost)
+        {
+            levelBaitBudget += emergencyBaitBudget;
+            emergencyBudgetUsed = true;
+            spawnTimer = 0f;
+            gameManager.StatusText = "Only a few risky scraps remain.";
+        }
+    }
+
+    private bool SpawnBait()
     {
         if (baitPrefabs == null || baitPrefabs.Length == 0)
         {
-            return;
+            return false;
         }
 
         FishBaitType type = PickWeightedType();
@@ -76,31 +150,72 @@ public class BaitSpawner : MonoBehaviour
             prefab = baitPrefabs[0];
         }
 
-        Vector3 position = PickSpawnPosition();
+        if (!TryPickSpawnPosition(out Vector3 position))
+        {
+            return false;
+        }
+
         BaitPickup bait = Instantiate(prefab, position, Quaternion.identity, transform);
         bait.Configure(type);
         activeBaits.Add(bait);
+        spawnedThisLevel++;
+        return true;
     }
 
-    private Vector3 PickSpawnPosition()
+    private bool TryPickSpawnPosition(out Vector3 position)
     {
-        Vector3 position = Vector3.zero;
+        position = Vector3.zero;
 
-        // Try a few random points so bait does not appear directly on the fish.
-        for (int attempts = 0; attempts < 16; attempts++)
+        // Try a few random points so bait does not appear directly on the fish
+        // or too close to another bait. This prevents accidental multi-pickups.
+        for (int attempts = 0; attempts < 32; attempts++)
         {
             position = new Vector3(
                 Random.Range(spawnMin.x, spawnMax.x),
                 Random.Range(spawnMin.y, spawnMax.y),
                 0f);
 
-            if (player == null || Vector2.Distance(position, player.transform.position) >= minDistanceFromPlayer)
+            if (IsValidSpawnPosition(position))
             {
-                return position;
+                return true;
             }
         }
 
-        return position;
+        return false;
+    }
+
+    private bool IsValidSpawnPosition(Vector3 position)
+    {
+        if (IsInsideBigFishBlock(position))
+        {
+            return false;
+        }
+
+        if (player != null && Vector2.Distance(position, player.transform.position) < minDistanceFromPlayer)
+        {
+            return false;
+        }
+
+        for (int i = 0; i < activeBaits.Count; i++)
+        {
+            if (activeBaits[i] != null && Vector2.Distance(position, activeBaits[i].transform.position) < minDistanceBetweenBaits)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private bool IsInsideBigFishBlock(Vector3 position)
+    {
+        // The big fish lives in the lower-left corner. Blocking this rectangle
+        // prevents bait from appearing underneath the ally sprite or prompt.
+        Vector2 halfSize = bigFishBlockSize * 0.5f;
+        return position.x >= bigFishBlockCenter.x - halfSize.x
+            && position.x <= bigFishBlockCenter.x + halfSize.x
+            && position.y >= bigFishBlockCenter.y - halfSize.y
+            && position.y <= bigFishBlockCenter.y + halfSize.y;
     }
 
     private BaitPickup FindPrefab(FishBaitType type)

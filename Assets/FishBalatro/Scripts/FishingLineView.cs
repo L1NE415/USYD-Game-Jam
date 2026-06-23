@@ -1,8 +1,9 @@
 using UnityEngine;
 
 [RequireComponent(typeof(LineRenderer))]
-// Draws the visible fishing line only while the player is hooked. It does not
-// apply physics; FishGameManager calculates the pull force.
+// Optional warning line renderer between the fisherman and the player. The
+// current net-sweep design keeps it hidden, but the helper remains useful if a
+// later hazard wants a simple line telegraph.
 public class FishingLineView : MonoBehaviour
 {
     public FishGameManager gameManager;
@@ -12,7 +13,7 @@ public class FishingLineView : MonoBehaviour
     public Color warningColor = new Color(1f, 0.1f, 0.08f, 1f);
 
     private LineRenderer line;
-    private bool hooked;
+    private bool visible;
     private bool warning;
 
     private void Awake()
@@ -27,14 +28,14 @@ public class FishingLineView : MonoBehaviour
     private void LateUpdate()
     {
         // LateUpdate keeps the line endpoints synced after player/fisherman move.
-        if (!hooked || fisherman == null || player == null)
+        if (!visible || fisherman == null || player == null)
         {
             line.positionCount = 0;
             return;
         }
 
         line.positionCount = 2;
-        line.SetPosition(0, fisherman.HookAnchorPosition);
+        line.SetPosition(0, fisherman.LineAnchorPosition);
         line.SetPosition(1, player.transform.position);
 
         Color color = warning ? warningColor : normalColor;
@@ -42,10 +43,10 @@ public class FishingLineView : MonoBehaviour
         line.endColor = color;
     }
 
-    public void SetHooked(bool value)
+    public void SetLineVisible(bool value)
     {
-        hooked = value;
-        if (!hooked)
+        visible = value;
+        if (!visible)
         {
             warning = false;
         }

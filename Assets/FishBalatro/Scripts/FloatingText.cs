@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 
 [RequireComponent(typeof(TextMeshPro))]
-// Small world-space popup used for score, bait effects, and hook feedback.
+// Small world-space popup used for score, bait effects, and hazard feedback.
 // It creates itself at runtime so designers do not need a prefab for every popup.
 public class FloatingText : MonoBehaviour
 {
