@@ -1,6 +1,7 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
 using UnityEngine.InputSystem;
@@ -10,8 +11,8 @@ using UnityEngine.InputSystem;
 //
 // Score model for the current design:
 // - TotalScore is the visible score and also the currency spent when pressing E to attack.
-// - CurrentRunScore is the amount gained during the current greed streak; if the player is
-//   caught by the net sweep, this amount is removed from TotalScore.
+// - CurrentRunScore is the amount gained during the current greed streak; dodging a net
+//   clears this risk, while getting caught ends the run.
 // - Alert triggers a large pendulum net sweep when it reaches 100.
 public class FishGameManager : MonoBehaviour
 {
@@ -36,7 +37,6 @@ public class FishGameManager : MonoBehaviour
 
     [Header("Net Sweep")]
     public float netDodgedRecoverySeconds = 0.55f;
-    public float netCaughtRecoverySeconds = 0.85f;
 
     private FishGameState state = FishGameState.Normal;
     private int totalScore;
@@ -62,6 +62,7 @@ public class FishGameManager : MonoBehaviour
     public int Level => level;
     public float Alert => alert;
     public float NetSweepProgress => state == FishGameState.NetSweep && netSweep != null ? netSweep.Progress : 0f;
+    public bool IsGameOver => state == FishGameState.Caught;
 
     public string StatusText
     {
@@ -106,6 +107,21 @@ public class FishGameManager : MonoBehaviour
 
     private void Update()
     {
+        if (state == FishGameState.Caught)
+        {
+            if (ReadRestartPressed())
+            {
+                RestartGame();
+            }
+
+            if (ui != null)
+            {
+                ui.UpdateFrom(this);
+            }
+
+            return;
+        }
+
         if (state == FishGameState.Normal && ReadAttackPressed())
         {
             TryCallBigFish();
@@ -365,22 +381,24 @@ public class FishGameManager : MonoBehaviour
     private void CatchFish()
     {
         state = FishGameState.Caught;
-        ShowPopup(player.transform.position, "NETTED! Run lost.", Color.red);
-        // Getting caught loses only the current greed streak, not the whole game.
-        if (currentRunScore > 0)
-        {
-            totalScore = Mathf.Max(0, totalScore - currentRunScore);
-        }
-        ResetRunState();
+        statusText = "CAUGHT IN THE NET! Press R to restart.";
+        comboText = "Final score: " + totalScore;
 
-        if (playerRespawn != null)
+        if (player != null)
         {
-            player.ResetTo(playerRespawn.position);
+            ShowPopup(player.transform.position, "CAUGHT!", Color.red);
         }
+
+        if (baitSpawner != null)
+        {
+            baitSpawner.ClearBaits();
+        }
+
+        ResetRunState();
 
         if (fisherman != null)
         {
-            fisherman.SetNotice(false);
+            fisherman.SetNotice(true);
             fisherman.SetReelWarning(false);
         }
 
@@ -389,12 +407,8 @@ public class FishGameManager : MonoBehaviour
             fishingLine.SetLineVisible(false);
         }
 
-        if (netSweep != null)
-        {
-            netSweep.Hide();
-        }
-
-        StartCoroutine(ReturnToNormalAfter(FishGameState.Caught, netCaughtRecoverySeconds));
+        // Game over is intentional here. The player restarts the scene with R
+        // instead of automatically recovering after touching the net.
     }
 
     private IEnumerator ReturnToNormalAfter(FishGameState temporaryState, float delay)
@@ -425,6 +439,19 @@ public class FishGameManager : MonoBehaviour
         }
     }
 
+    public void RestartGame()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (activeScene.buildIndex >= 0)
+        {
+            SceneManager.LoadScene(activeScene.buildIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(activeScene.name);
+        }
+    }
+
     private static bool ReadAttackPressed()
     {
 #if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
@@ -432,6 +459,16 @@ public class FishGameManager : MonoBehaviour
         return keyboard != null && keyboard.eKey.wasPressedThisFrame;
 #else
         return Input.GetKeyDown(KeyCode.E);
+#endif
+    }
+
+    private static bool ReadRestartPressed()
+    {
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && keyboard.rKey.wasPressedThisFrame;
+#else
+        return Input.GetKeyDown(KeyCode.R);
 #endif
     }
 }

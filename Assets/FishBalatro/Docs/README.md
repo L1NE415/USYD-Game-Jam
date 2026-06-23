@@ -22,7 +22,7 @@ or use the menu shortcut above.
 4. Press `E` at any time to spend score and make the big fish attack the fisherman.
 5. If Alert reaches 100%, the fisherman drops a large pendulum net.
 6. Swim or dash out of the sweeping net before it crosses the water.
-7. Dodging keeps your total score and clears the current at-risk streak. Getting netted loses the current at-risk streak.
+7. Dodging keeps your total score and clears the current at-risk streak. Getting netted ends the run.
 8. After a big fish attack, the fisherman flees and a new fisherman arrives as the next level.
 
 ## Controls
@@ -30,6 +30,7 @@ or use the menu shortcut above.
 - `WASD` / arrow keys: swim
 - `Shift`: burst dash
 - `E`: spend score to attack the fisherman
+- `R`: restart after getting caught
 
 ## Bait Effects
 
@@ -66,8 +67,9 @@ screen like a pendulum.
 
 - The net is generated at runtime by `NetSweepHazard`, so no separate net art is required yet.
 - During the yellow warning phase, the net is visible but not dangerous.
-- During the cyan sweep phase, touching the net catches the player and loses `CurrentRunScore`.
+- During the cyan sweep phase, touching the net catches the player and ends the run.
 - If the player dodges the sweep, `TotalScore` is kept and Alert/combo pressure resets.
+- After getting caught, press `R` to reload the scene and start again.
 
 ## Code Map
 
@@ -88,7 +90,7 @@ screen like a pendulum.
 
 - There is no banking/safe-zone mechanic in this version.
 - `TotalScore` is both the visible score and the currency used by the `E` attack.
-- `CurrentRunScore` is the amount currently at risk if the fish gets caught.
+- `CurrentRunScore` is the greed streak cleared when the fish dodges the net; getting caught ends the run instead.
 - Most tuning values are public fields on `FishGameManager`, `FishPlayerController`, and `BaitSpawner`.
 
 ## Next Best Upgrades

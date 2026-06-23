@@ -79,11 +79,19 @@ public class NetSweepHazard : MonoBehaviour
                 if (hitbox.Distance(playerCollider).isOverlapped)
                 {
                     CaughtPlayer = true;
+                    Progress = 1f;
+                    hitbox.enabled = false;
+                    SetNetColor(new Color(1f, 0.15f, 0.1f, 0.95f));
                     break;
                 }
             }
 
             yield return null;
+        }
+
+        if (CaughtPlayer)
+        {
+            yield break;
         }
 
         hitbox.enabled = false;

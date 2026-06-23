@@ -48,7 +48,8 @@ public class FishPlayerController : MonoBehaviour
 
         // Freeze the small fish during the big fish attack cutscene so the
         // level transition has a clear, readable moment.
-        bool movementLocked = gameManager != null && gameManager.State == FishGameState.BigFishAttack;
+        bool movementLocked = gameManager != null
+            && (gameManager.State == FishGameState.BigFishAttack || gameManager.State == FishGameState.Caught);
         moveInput = movementLocked ? Vector2.zero : ReadMovementInput();
         if (moveInput.sqrMagnitude > 1f)
         {

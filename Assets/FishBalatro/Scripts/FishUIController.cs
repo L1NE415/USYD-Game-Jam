@@ -16,8 +16,15 @@ public class FishUIController : MonoBehaviour
     public TMP_Text comboText;
     public TMP_Text netSweepText;
     public GameObject netSweepPanel;
+    public TMP_Text gameOverText;
+    public GameObject gameOverPanel;
     public Image alertFill;
     public Image netSweepFill;
+
+    private void Awake()
+    {
+        EnsureGameOverOverlay();
+    }
 
     public void UpdateFrom(FishGameManager game)
     {
@@ -35,6 +42,7 @@ public class FishUIController : MonoBehaviour
         SetText(statusText, game.StatusText);
         SetText(comboText, game.ComboText);
         SetText(netSweepText, "Net Sweep " + Mathf.CeilToInt(game.NetSweepProgress * 100f) + "%");
+        SetText(gameOverText, "CAUGHT IN THE NET\nFinal Score: " + game.TotalScore + "\nPress R to restart");
 
         if (alertFill != null)
         {
@@ -50,6 +58,11 @@ public class FishUIController : MonoBehaviour
             netSweepPanel.SetActive(showNetSweep);
         }
 
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(game.IsGameOver);
+        }
+
         if (netSweepFill != null)
         {
             netSweepFill.fillAmount = Mathf.Clamp01(game.NetSweepProgress);
@@ -62,5 +75,47 @@ public class FishUIController : MonoBehaviour
         {
             text.text = value;
         }
+    }
+
+    private void EnsureGameOverOverlay()
+    {
+        if (gameOverPanel != null)
+        {
+            return;
+        }
+
+        GameObject panel = new GameObject("GameOverPanel", typeof(RectTransform), typeof(Image));
+        panel.transform.SetParent(transform, false);
+
+        RectTransform panelRect = panel.GetComponent<RectTransform>();
+        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+        panelRect.pivot = new Vector2(0.5f, 0.5f);
+        panelRect.anchoredPosition = Vector2.zero;
+        panelRect.sizeDelta = new Vector2(760f, 300f);
+
+        Image panelImage = panel.GetComponent<Image>();
+        panelImage.color = new Color(0.04f, 0.06f, 0.08f, 0.9f);
+
+        GameObject textObject = new GameObject("GameOverText", typeof(RectTransform));
+        textObject.transform.SetParent(panel.transform, false);
+
+        RectTransform textRect = textObject.GetComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(32f, 24f);
+        textRect.offsetMax = new Vector2(-32f, -24f);
+
+        TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
+        text.font = statusText != null ? statusText.font : TMP_Settings.defaultFontAsset;
+        text.fontSize = 46f;
+        text.color = Color.white;
+        text.alignment = TextAlignmentOptions.Center;
+        text.textWrappingMode = TextWrappingModes.Normal;
+        text.raycastTarget = false;
+
+        gameOverPanel = panel;
+        gameOverText = text;
+        gameOverPanel.SetActive(false);
     }
 }

@@ -843,7 +843,6 @@ MonoBehaviour:
   baseAttackCost: 240
   attackCostStep: 140
   netDodgedRecoverySeconds: 0.55
-  netCaughtRecoverySeconds: 0.85
 --- !u!4 &338883088
 Transform:
   m_ObjectHideFlags: 0
