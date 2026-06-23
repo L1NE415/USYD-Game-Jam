@@ -1289,6 +1289,8 @@ MonoBehaviour:
   comboText: {fileID: 904378833}
   netSweepText: {fileID: 1362446085}
   netSweepPanel: {fileID: 1695914565}
+  gameOverText: {fileID: 0}
+  gameOverPanel: {fileID: 0}
   alertFill: {fileID: 1645383264}
   netSweepFill: {fileID: 900281486}
 --- !u!114 &894119885
@@ -2685,6 +2687,8 @@ GameObject:
   - component: {fileID: 1690600625}
   - component: {fileID: 1690600624}
   - component: {fileID: 1690600623}
+  - component: {fileID: 1690600628}
+  - component: {fileID: 1690600629}
   m_Layer: 0
   m_Name: Player Fish
   m_TagString: Untagged
@@ -2823,7 +2827,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 30
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 5c663e6cb7b391b43b2d12e6f0405f06, type: 3}
+  m_Sprite: {fileID: 765142202280408045, guid: ca244cffd21dfb645855a604b0e2e953, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2848,6 +2852,44 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!111 &1690600628
+Animation:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690600622}
+  m_Enabled: 1
+  serializedVersion: 4
+  m_Animation: {fileID: 7400000, guid: 5b182654a82e68e448ee94fec36165d0, type: 2}
+  m_Animations: []
+  m_WrapMode: 0
+  m_PlayAutomatically: 1
+  m_AnimatePhysics: 0
+  m_UpdateMode: 0
+  m_CullingType: 0
+--- !u!95 &1690600629
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1690600622}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 502661ddd6f3d11499ce353e72ec7121, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1693662533
 GameObject:
   m_ObjectHideFlags: 0
