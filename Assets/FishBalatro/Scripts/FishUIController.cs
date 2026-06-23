@@ -14,10 +14,10 @@ public class FishUIController : MonoBehaviour
     public TMP_Text attackCostText;
     public TMP_Text statusText;
     public TMP_Text comboText;
-    public TMP_Text hookGripText;
-    public GameObject hookGripPanel;
+    public TMP_Text netSweepText;
+    public GameObject netSweepPanel;
     public Image alertFill;
-    public Image hookGripFill;
+    public Image netSweepFill;
 
     public void UpdateFrom(FishGameManager game)
     {
@@ -34,7 +34,7 @@ public class FishUIController : MonoBehaviour
         SetText(attackCostText, "Press E Attack: " + game.AttackCost);
         SetText(statusText, game.StatusText);
         SetText(comboText, game.ComboText);
-        SetText(hookGripText, "Hook Grip " + Mathf.CeilToInt(game.HookGrip) + "%");
+        SetText(netSweepText, "Net Sweep " + Mathf.CeilToInt(game.NetSweepProgress * 100f) + "%");
 
         if (alertFill != null)
         {
@@ -43,16 +43,16 @@ public class FishUIController : MonoBehaviour
             alertFill.color = game.Alert >= 80f ? new Color(1f, 0.12f, 0.08f) : new Color(1f, 0.62f, 0.18f);
         }
 
-        // Hook Grip is hidden during normal swimming and appears only in escape.
-        bool showHook = game.State == FishGameState.Hooked;
-        if (hookGripPanel != null)
+        // This panel is a compact net-sweep warning meter.
+        bool showNetSweep = game.State == FishGameState.NetSweep;
+        if (netSweepPanel != null)
         {
-            hookGripPanel.SetActive(showHook);
+            netSweepPanel.SetActive(showNetSweep);
         }
 
-        if (hookGripFill != null)
+        if (netSweepFill != null)
         {
-            hookGripFill.fillAmount = Mathf.Clamp01(game.HookGrip / 100f);
+            netSweepFill.fillAmount = Mathf.Clamp01(game.NetSweepProgress);
         }
     }
 

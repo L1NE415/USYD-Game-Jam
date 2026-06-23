@@ -55,7 +55,7 @@ public class BaitPickup : MonoBehaviour
             return;
         }
 
-        // Bait can only be eaten during normal swimming. Hook escape and attack
+        // Bait can only be eaten during normal swimming. Net sweeps and attack
         // transitions intentionally ignore pickups.
         FishGameManager gameManager = FishGameManager.Instance;
         if (gameManager == null || !gameManager.CanEatBait)

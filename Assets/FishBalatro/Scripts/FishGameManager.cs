@@ -11,8 +11,8 @@ using UnityEngine.InputSystem;
 // Score model for the current design:
 // - TotalScore is the visible score and also the currency spent when pressing E to attack.
 // - CurrentRunScore is the amount gained during the current greed streak; if the player is
-//   caught during the hook escape, this amount is removed from TotalScore.
-// - Alert pushes the player into the hook escape phase when it reaches 100.
+//   caught by the net sweep, this amount is removed from TotalScore.
+// - Alert triggers a large pendulum net sweep when it reaches 100.
 public class FishGameManager : MonoBehaviour
 {
     public static FishGameManager Instance { get; private set; }
@@ -21,6 +21,7 @@ public class FishGameManager : MonoBehaviour
     public FishPlayerController player;
     public FishermanController fisherman;
     public FishingLineView fishingLine;
+    public NetSweepHazard netSweep;
     public BaitSpawner baitSpawner;
     public BigFishAlly bigFish;
     public FishUIController ui;
@@ -33,18 +34,9 @@ public class FishGameManager : MonoBehaviour
     public int baseAttackCost = 240;
     public int attackCostStep = 140;
 
-    [Header("Hook Escape")]
-    public float waterSurfaceY = 3.55f;
-    public float hookGripStart = 100f;
-    public float pullSpeed = 1.9f;
-    public float reelYankSpeed = 3.1f;
-    public float wiggleReductionPerSecond = 11f;
-    public float wiggleTurnBonus = 3f;
-    public float perfectBurstReduction = 30f;
-    public float badBurstReduction = 8f;
-    public float reelPulseInterval = 1.45f;
-    public float reelWarningSeconds = 0.42f;
-    public float reelYankSeconds = 0.18f;
+    [Header("Net Sweep")]
+    public float netDodgedRecoverySeconds = 0.55f;
+    public float netCaughtRecoverySeconds = 0.85f;
 
     private FishGameState state = FishGameState.Normal;
     private int totalScore;
@@ -53,13 +45,8 @@ public class FishGameManager : MonoBehaviour
     private int nextBaitMultiplier = 1;
     private int level = 1;
     private float alert;
-    private float hookGrip;
     private bool hasPreviousEffect;
     private FishBaitType previousEffectType;
-    private float reelTimer;
-    private float reelWarningTimer;
-    private float reelYankTimer;
-    private int lastHorizontalSign;
     private float stateMessageTimer;
     private string statusText = "Steal bait for score. Press E to attack the fisherman.";
     private string comboText = "";
@@ -74,7 +61,7 @@ public class FishGameManager : MonoBehaviour
     public int NextBaitMultiplier => nextBaitMultiplier;
     public int Level => level;
     public float Alert => alert;
-    public float HookGrip => hookGrip;
+    public float NetSweepProgress => state == FishGameState.NetSweep && netSweep != null ? netSweep.Progress : 0f;
 
     public string StatusText
     {
@@ -101,12 +88,14 @@ public class FishGameManager : MonoBehaviour
 
     private void Start()
     {
-        hookGrip = hookGripStart;
-        reelTimer = reelPulseInterval;
-
         if (fishingLine != null)
         {
-            fishingLine.SetHooked(false);
+            fishingLine.SetLineVisible(false);
+        }
+
+        if (netSweep != null)
+        {
+            netSweep.Hide();
         }
 
         if (baitSpawner != null)
@@ -117,13 +106,7 @@ public class FishGameManager : MonoBehaviour
 
     private void Update()
     {
-        // While hooked, the normal attack key is disabled because the player is
-        // busy escaping the line.
-        if (state == FishGameState.Hooked)
-        {
-            UpdateHooked();
-        }
-        else if (state == FishGameState.Normal && ReadAttackPressed())
+        if (state == FishGameState.Normal && ReadAttackPressed())
         {
             TryCallBigFish();
         }
@@ -164,30 +147,13 @@ public class FishGameManager : MonoBehaviour
         hasPreviousEffect = true;
     }
 
-    public Vector2 GetHookPullVelocity()
-    {
-        if (state != FishGameState.Hooked || fisherman == null || player == null)
-        {
-            return Vector2.zero;
-        }
-
-        Vector2 direction = ((Vector2)fisherman.HookAnchorPosition - (Vector2)player.transform.position).normalized;
-        float speed = pullSpeed + (reelYankTimer > 0f ? reelYankSpeed : 0f);
-        return direction * speed;
-    }
-
     public void OnPlayerBurstDash()
     {
-        if (state != FishGameState.Hooked)
+        if (state == FishGameState.NetSweep)
         {
+            StatusText = "Dash away from the sweeping net.";
             return;
         }
-
-        bool perfect = reelWarningTimer > 0f;
-        float reduction = perfect ? perfectBurstReduction : badBurstReduction;
-        ReduceHookGrip(reduction);
-        ShowPopup(player.transform.position + Vector3.up * 0.55f, perfect ? "PERFECT DASH!" : "Dash struggle", perfect ? Color.cyan : Color.white);
-        StatusText = perfect ? "Perfect dash! The hook slips." : "Dash fights the line.";
     }
 
     public void TryCallBigFish()
@@ -219,7 +185,12 @@ public class FishGameManager : MonoBehaviour
 
         if (fishingLine != null)
         {
-            fishingLine.SetHooked(false);
+            fishingLine.SetLineVisible(false);
+        }
+
+        if (netSweep != null)
+        {
+            netSweep.Hide();
         }
 
         if (fisherman != null)
@@ -316,121 +287,61 @@ public class FishGameManager : MonoBehaviour
 
         if (alert >= 100f)
         {
-            BeginHooked();
+            BeginNetSweep();
         }
     }
 
-    private void BeginHooked()
+    private void BeginNetSweep()
     {
-        if (state == FishGameState.Hooked)
+        if (state != FishGameState.Normal)
         {
             return;
         }
 
-        // Alert full is not instant death. It starts the short escape minigame.
-        state = FishGameState.Hooked;
-        hookGrip = hookGripStart;
-        reelTimer = reelPulseInterval;
-        reelWarningTimer = 0f;
-        reelYankTimer = 0f;
-        lastHorizontalSign = 0;
-        statusText = "FISHERMAN NOTICED YOU! ESCAPE!";
+        StartCoroutine(NetSweepRoutine());
+    }
+
+    private IEnumerator NetSweepRoutine()
+    {
+        // Alert full is not instant death. It starts a large, readable sweep
+        // hazard that the player can dodge through movement.
+        state = FishGameState.NetSweep;
+        statusText = "FISHERMAN DROPS A NET! DODGE THE SWING!";
 
         if (fisherman != null)
         {
             fisherman.SetNotice(true);
+            fisherman.SetReelWarning(true);
         }
 
         if (fishingLine != null)
         {
-            fishingLine.SetHooked(true);
+            fishingLine.SetLineVisible(false);
         }
 
         if (player != null)
         {
-            ShowPopup(player.transform.position + Vector3.up * 0.85f, "ESCAPE!", Color.red);
+            ShowPopup(player.transform.position + Vector3.up * 0.85f, "NET!", Color.red);
         }
-    }
 
-    private void UpdateHooked()
-    {
-        if (player == null)
+        if (netSweep == null)
         {
-            return;
+            netSweep = NetSweepHazard.CreateRuntimeNet();
         }
 
-        HandleWiggle();
-        HandleReelPulse();
+        yield return netSweep.PlaySweep(player, level);
 
-        if (player.transform.position.y >= waterSurfaceY)
+        if (netSweep.CaughtPlayer)
         {
             CatchFish();
-            return;
         }
-
-        if (hookGrip <= 0f)
+        else
         {
-            EscapeHook();
+            EscapeNet();
         }
     }
 
-    private void HandleWiggle()
-    {
-        // Alternating left/right input lowers Hook Grip faster than holding one
-        // direction. This is intentionally simple and readable for jam tuning.
-        float horizontal = player.MoveInput.x;
-        if (Mathf.Abs(horizontal) <= 0.15f)
-        {
-            return;
-        }
-
-        ReduceHookGrip(wiggleReductionPerSecond * Time.deltaTime);
-
-        int sign = horizontal > 0f ? 1 : -1;
-        if (lastHorizontalSign != 0 && sign != lastHorizontalSign)
-        {
-            ReduceHookGrip(wiggleTurnBonus);
-        }
-
-        lastHorizontalSign = sign;
-    }
-
-    private void HandleReelPulse()
-    {
-        // Reel pulse loop: warn briefly, then yank. A dash during the warning is
-        // rewarded in OnPlayerBurstDash.
-        reelTimer -= Time.deltaTime;
-        reelWarningTimer = Mathf.Max(0f, reelWarningTimer - Time.deltaTime);
-        reelYankTimer = Mathf.Max(0f, reelYankTimer - Time.deltaTime);
-
-        bool warning = reelWarningTimer > 0f;
-
-        if (reelTimer <= 0f && !warning)
-        {
-            reelWarningTimer = reelWarningSeconds;
-            reelTimer = reelPulseInterval + reelWarningSeconds;
-            warning = true;
-            StatusText = "Line flashing: dash sideways now!";
-        }
-
-        if (warning && reelWarningTimer <= Time.deltaTime)
-        {
-            reelYankTimer = reelYankSeconds;
-            StatusText = "The fisherman yanks the line!";
-        }
-
-        if (fisherman != null)
-        {
-            fisherman.SetReelWarning(warning);
-        }
-
-        if (fishingLine != null)
-        {
-            fishingLine.SetWarning(warning);
-        }
-    }
-
-    private void EscapeHook()
+    private void EscapeNet()
     {
         if (fisherman != null)
         {
@@ -440,20 +351,21 @@ public class FishGameManager : MonoBehaviour
 
         if (fishingLine != null)
         {
-            fishingLine.SetHooked(false);
+            fishingLine.SetLineVisible(false);
         }
 
-        // Escaping keeps TotalScore. It only clears the current risk/combo state.
+        // Dodging the net keeps TotalScore. It only clears the current
+        // risk/combo state so the player can start a fresh greed streak.
         ResetRunState();
-        statusText = "ESCAPED! Keep stealing or press E to attack.";
+        statusText = "DODGED THE NET! Keep stealing or press E to attack.";
         comboText = "";
-        StartCoroutine(ReturnToNormalAfter(FishGameState.Recovering, 0.65f));
+        StartCoroutine(ReturnToNormalAfter(FishGameState.Recovering, netDodgedRecoverySeconds));
     }
 
     private void CatchFish()
     {
         state = FishGameState.Caught;
-        ShowPopup(player.transform.position, "CAUGHT! Run lost.", Color.red);
+        ShowPopup(player.transform.position, "NETTED! Run lost.", Color.red);
         // Getting caught loses only the current greed streak, not the whole game.
         if (currentRunScore > 0)
         {
@@ -474,10 +386,15 @@ public class FishGameManager : MonoBehaviour
 
         if (fishingLine != null)
         {
-            fishingLine.SetHooked(false);
+            fishingLine.SetLineVisible(false);
         }
 
-        StartCoroutine(ReturnToNormalAfter(FishGameState.Caught, 0.85f));
+        if (netSweep != null)
+        {
+            netSweep.Hide();
+        }
+
+        StartCoroutine(ReturnToNormalAfter(FishGameState.Caught, netCaughtRecoverySeconds));
     }
 
     private IEnumerator ReturnToNormalAfter(FishGameState temporaryState, float delay)
@@ -498,15 +415,6 @@ public class FishGameManager : MonoBehaviour
         multiplier = 1;
         nextBaitMultiplier = 1;
         hasPreviousEffect = false;
-        hookGrip = hookGripStart;
-        reelWarningTimer = 0f;
-        reelYankTimer = 0f;
-        reelTimer = reelPulseInterval;
-    }
-
-    private void ReduceHookGrip(float amount)
-    {
-        hookGrip = Mathf.Max(0f, hookGrip - amount);
     }
 
     private void ShowPopup(Vector3 position, string message, Color color)

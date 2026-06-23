@@ -41,6 +41,7 @@ public static class FishBalatroSceneBuilder
         FishermanController fisherman = CreateFisherman(sprites);
         FishPlayerController player = CreatePlayer(sprites);
         FishingLineView line = CreateFishingLine(gameManager, fisherman, player);
+        NetSweepHazard netSweep = CreateNetSweepHazard();
         BaitSpawner spawner = CreateBaitSpawner(gameManager, player, baitPrefabs);
         BigFishAlly bigFish = CreateBigFish(sprites, gameManager);
         FishUIController ui = CreateUi(sprites);
@@ -49,6 +50,7 @@ public static class FishBalatroSceneBuilder
         gameManager.player = player;
         gameManager.fisherman = fisherman;
         gameManager.fishingLine = line;
+        gameManager.netSweep = netSweep;
         gameManager.baitSpawner = spawner;
         gameManager.bigFish = bigFish;
         gameManager.ui = ui;
@@ -136,21 +138,6 @@ public static class FishBalatroSceneBuilder
             Line(pixels, 34, 52, 24, 31, 33, 46, new Color32(68, 45, 30, 255));
             Rect(pixels, 34, 52, 14, 40, 2, 2, new Color32(18, 18, 18, 255));
             Rect(pixels, 34, 52, 20, 40, 2, 2, new Color32(18, 18, 18, 255));
-        });
-
-        sprites["hook"] = SaveSprite("hook", 18, 28, pixels =>
-        {
-            Rect(pixels, 18, 28, 8, 7, 2, 18, new Color32(205, 214, 220, 255));
-            Rect(pixels, 18, 28, 8, 5, 7, 2, new Color32(205, 214, 220, 255));
-            Rect(pixels, 18, 28, 13, 7, 2, 5, new Color32(205, 214, 220, 255));
-            Rect(pixels, 18, 28, 11, 12, 2, 2, new Color32(205, 214, 220, 255));
-        });
-
-        sprites["rock"] = SaveSprite("rock", 40, 28, pixels =>
-        {
-            Ellipse(pixels, 40, 28, 19, 12, 17, 10, new Color32(58, 83, 104, 255));
-            Ellipse(pixels, 40, 28, 25, 16, 9, 7, new Color32(82, 111, 132, 255));
-            Rect(pixels, 40, 28, 8, 9, 8, 2, new Color32(35, 56, 73, 255));
         });
 
         sprites["worm"] = SaveSprite("bait_worm", 20, 16, pixels =>
@@ -261,7 +248,8 @@ public static class FishBalatroSceneBuilder
     private static void CreateEnvironment(Dictionary<string, Sprite> sprites)
     {
         // The MVP arena is intentionally simple: water bounds, surface danger,
-        // two rocks reserved for future line-snag mechanics, and tutorial text.
+        // and tutorial text. Obstacles can be added later once the core loop is
+        // tuned.
         CreateSpriteObject("Water Background", sprites["water_panel"], Vector3.zero, new Vector3(18f, 10.4f, 1f), -20);
 
         GameObject surface = CreateSpriteObject("Water Surface", sprites["ui_square"], new Vector3(0f, 3.6f, 0f), new Vector3(17.5f, 0.08f, 1f), 2);
@@ -270,11 +258,6 @@ public static class FishBalatroSceneBuilder
         CreateBoundary("Wall Left", new Vector2(-8.7f, -0.35f), new Vector2(0.4f, 8.2f));
         CreateBoundary("Wall Right", new Vector2(8.7f, -0.35f), new Vector2(0.4f, 8.2f));
         CreateBoundary("Sea Floor", new Vector2(0f, -4.35f), new Vector2(18f, 0.4f));
-
-        GameObject rockA = CreateSpriteObject("Line Snag Rock A", sprites["rock"], new Vector3(-2.8f, -2.85f, 0f), new Vector3(1.45f, 1.15f, 1f), 5);
-        rockA.AddComponent<BoxCollider2D>().size = new Vector2(0.9f, 0.55f);
-        GameObject rockB = CreateSpriteObject("Line Snag Rock B", sprites["rock"], new Vector3(3.1f, -2.45f, 0f), new Vector3(1.25f, 1f, 1f), 5);
-        rockB.AddComponent<BoxCollider2D>().size = new Vector2(0.9f, 0.55f);
 
         CreateWorldText("Tutorial", "Steal bait for score. Press E to attack the fisherman.", new Vector3(0f, -4.05f, 0f), 1.05f, new Color(0.78f, 0.96f, 1f), 60, null);
     }
@@ -302,10 +285,7 @@ public static class FishBalatroSceneBuilder
         GameObject bodyObject = CreateSpriteObject("Fisherman", sprites["fisherman"], new Vector3(0.38f, 0.68f, 0f), Vector3.one, 12, root.transform);
         bodyObject.transform.localPosition = new Vector3(0.38f, 0.68f, 0f);
 
-        GameObject hookObject = CreateSpriteObject("Idle Hook", sprites["hook"], new Vector3(1.25f, -0.8f, 0f), Vector3.one, 18, root.transform);
-        hookObject.transform.localPosition = new Vector3(1.25f, -0.8f, 0f);
-
-        Transform anchor = CreateMarker("Hook Anchor", new Vector3(1.25f, 0.22f, 0f), root.transform);
+        Transform anchor = CreateMarker("Line Anchor", new Vector3(1.25f, 0.22f, 0f), root.transform);
 
         TextMeshPro exclamation = CreateWorldText("Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70, root.transform);
         exclamation.transform.localPosition = new Vector3(0.5f, 1.55f, 0f);
@@ -315,8 +295,7 @@ public static class FishBalatroSceneBuilder
         name.alignment = TextAlignmentOptions.Center;
 
         FishermanController fisherman = root.AddComponent<FishermanController>();
-        fisherman.hookAnchor = anchor;
-        fisherman.hookVisual = hookObject.transform;
+        fisherman.lineAnchor = anchor;
         fisherman.boatRenderer = boatObject.GetComponent<SpriteRenderer>();
         fisherman.fishermanRenderer = bodyObject.GetComponent<SpriteRenderer>();
         fisherman.exclamationText = exclamation;
@@ -350,9 +329,33 @@ public static class FishBalatroSceneBuilder
         spawner.baitPrefabs = baitPrefabs;
         spawner.spawnMin = new Vector2(-6.8f, -2.8f);
         spawner.spawnMax = new Vector2(6.9f, 2.45f);
-        spawner.baseMaxBaits = 8;
-        spawner.spawnInterval = 0.75f;
+        spawner.baseMaxBaits = 6;
+        spawner.maxActiveBaits = 8;
+        spawner.spawnInterval = 1.1f;
+        spawner.minDistanceFromPlayer = 1.8f;
+        spawner.minDistanceBetweenBaits = 1.55f;
+        spawner.bigFishBlockCenter = new Vector2(-6.35f, -2.85f);
+        spawner.bigFishBlockSize = new Vector2(5.25f, 2.8f);
+        spawner.baseLevelBaitBudget = 16;
+        spawner.baitBudgetPerLevel = 3;
+        spawner.maxLevelBaitBudget = 24;
+        spawner.emergencyBaitBudget = 4;
         return spawner;
+    }
+
+    private static NetSweepHazard CreateNetSweepHazard()
+    {
+        GameObject netObject = new GameObject("Net Sweep Pivot");
+        NetSweepHazard netSweep = netObject.AddComponent<NetSweepHazard>();
+        netSweep.pivotPosition = new Vector3(0f, 3.7f, 0f);
+        netSweep.netSize = new Vector2(8f, 4.5f);
+        netSweep.netLocalOffset = new Vector2(0f, -3.9f);
+        netSweep.swingAngle = 62f;
+        netSweep.warningSeconds = 0.7f;
+        netSweep.sweepSeconds = 3.1f;
+        netSweep.recoverSeconds = 0.25f;
+        netObject.SetActive(false);
+        return netSweep;
     }
 
     private static BigFishAlly CreateBigFish(Dictionary<string, Sprite> sprites, FishGameManager gameManager)
@@ -402,19 +405,19 @@ public static class FishBalatroSceneBuilder
         ui.comboText = CreateUiText(canvasObject.transform, "ComboText", "", new Vector2(0.5f, 0f), new Vector2(0f, 112f), new Vector2(980f, 44f), 28f, new Color(1f, 0.92f, 0.56f), TextAlignmentOptions.Center, font);
         ui.statusText = CreateUiText(canvasObject.transform, "StatusText", "Steal bait for score. Press E to attack the fisherman.", new Vector2(0.5f, 0f), new Vector2(0f, 58f), new Vector2(1120f, 48f), 30f, Color.white, TextAlignmentOptions.Center, font);
 
-        GameObject hookPanel = new GameObject("HookGripPanel", typeof(RectTransform));
-        hookPanel.transform.SetParent(canvasObject.transform, false);
-        RectTransform hookRect = hookPanel.GetComponent<RectTransform>();
-        hookRect.anchorMin = new Vector2(0.5f, 0f);
-        hookRect.anchorMax = new Vector2(0.5f, 0f);
-        hookRect.pivot = new Vector2(0.5f, 0f);
-        hookRect.anchoredPosition = new Vector2(0f, 166f);
-        hookRect.sizeDelta = new Vector2(520f, 80f);
+        GameObject netPanel = new GameObject("NetSweepPanel", typeof(RectTransform));
+        netPanel.transform.SetParent(canvasObject.transform, false);
+        RectTransform netRect = netPanel.GetComponent<RectTransform>();
+        netRect.anchorMin = new Vector2(0.5f, 0f);
+        netRect.anchorMax = new Vector2(0.5f, 0f);
+        netRect.pivot = new Vector2(0.5f, 0f);
+        netRect.anchoredPosition = new Vector2(0f, 166f);
+        netRect.sizeDelta = new Vector2(520f, 80f);
 
-        CreateBar(hookPanel.transform, "HookGripBar", new Vector2(0.5f, 0.5f), new Vector2(0f, -14f), new Vector2(500f, 34f), uiSprite, new Color(0.1f, 0.08f, 0.12f, 0.86f), new Color(0.44f, 0.94f, 1f), out ui.hookGripFill);
-        ui.hookGripText = CreateUiText(hookPanel.transform, "HookGripText", "Hook Grip 100%", new Vector2(0.5f, 0.5f), new Vector2(0f, 24f), new Vector2(500f, 34f), 28f, Color.white, TextAlignmentOptions.Center, font);
-        ui.hookGripPanel = hookPanel;
-        hookPanel.SetActive(false);
+        CreateBar(netPanel.transform, "NetSweepBar", new Vector2(0.5f, 0.5f), new Vector2(0f, -14f), new Vector2(500f, 34f), uiSprite, new Color(0.1f, 0.08f, 0.12f, 0.86f), new Color(0.44f, 0.94f, 1f), out ui.netSweepFill);
+        ui.netSweepText = CreateUiText(netPanel.transform, "NetSweepText", "Net Sweep 0%", new Vector2(0.5f, 0.5f), new Vector2(0f, 24f), new Vector2(500f, 34f), 28f, Color.white, TextAlignmentOptions.Center, font);
+        ui.netSweepPanel = netPanel;
+        netPanel.SetActive(false);
 
         if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
         {

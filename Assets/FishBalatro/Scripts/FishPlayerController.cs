@@ -7,12 +7,11 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(Rigidbody2D))]
 [RequireComponent(typeof(Collider2D))]
 // Handles only fish movement input and physics. Game rules such as scoring,
-// hook escape, and big fish attacks stay in FishGameManager.
+// net sweeps, and big fish attacks stay in FishGameManager.
 public class FishPlayerController : MonoBehaviour
 {
     public FishGameManager gameManager;
     public float normalSpeed = 5.6f;
-    public float hookedSpeed = 3.1f;
     public float dashSpeed = 10.5f;
     public float dashDuration = 0.12f;
     public float dashCooldown = 0.65f;
@@ -69,7 +68,7 @@ public class FishPlayerController : MonoBehaviour
             dashTimer = dashDuration;
             dashCooldownTimer = dashCooldown;
 
-            // The manager decides whether this dash was useful for hook escape.
+            // The manager can react to dash timing during special hazards.
             if (gameManager != null)
             {
                 gameManager.OnPlayerBurstDash();
@@ -79,15 +78,7 @@ public class FishPlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        bool hooked = gameManager != null && gameManager.State == FishGameState.Hooked;
-        float speed = hooked ? hookedSpeed : normalSpeed;
-        Vector2 velocity = moveInput * speed;
-
-        // When hooked, the fishing line adds an upward pull toward the boat.
-        if (hooked)
-        {
-            velocity += gameManager.GetHookPullVelocity();
-        }
+        Vector2 velocity = moveInput * normalSpeed;
 
         if (dashTimer > 0f)
         {

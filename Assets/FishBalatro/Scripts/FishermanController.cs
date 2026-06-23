@@ -2,12 +2,12 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-// Owns the fisherman presentation: notice flash, reel warning color, hook
+// Owns the fisherman presentation: notice flash, danger tint, optional line
 // anchor position, and the flee/return animation between levels.
 public class FishermanController : MonoBehaviour
 {
-    public Transform hookAnchor;
-    public Transform hookVisual;
+    public Transform lineAnchor;
+    public Transform idleTackleVisual;
     public SpriteRenderer fishermanRenderer;
     public SpriteRenderer boatRenderer;
     public TMP_Text exclamationText;
@@ -16,7 +16,7 @@ public class FishermanController : MonoBehaviour
     private Vector3 homePosition;
     private Color homeColor = Color.white;
 
-    public Vector3 HookAnchorPosition => hookAnchor != null ? hookAnchor.position : transform.position;
+    public Vector3 LineAnchorPosition => lineAnchor != null ? lineAnchor.position : transform.position;
 
     private void Awake()
     {
