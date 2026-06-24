@@ -2,8 +2,8 @@ using TMPro;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
-// Component placed on every bait prefab. It detects the player touching bait,
-// then asks FishGameManager to apply the actual card-like bait effect.
+// Component placed on every bait prefab. It detects the player touching bait.
+// Then asks FishGameManager to apply the actual card-like bait effect.
 public class BaitPickup : MonoBehaviour
 {
     public FishBaitType baitType = FishBaitType.Worm;
