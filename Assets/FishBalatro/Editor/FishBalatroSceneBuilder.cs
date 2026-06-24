@@ -242,36 +242,51 @@ public static class FishBalatroSceneBuilder
         {
             Color32[] bladeColors =
             {
-                new Color32(25, 118, 82, 255),
-                new Color32(32, 148, 96, 255),
-                new Color32(61, 181, 118, 255),
-                new Color32(17, 95, 72, 255)
+                new Color32(12, 66, 55, 255),
+                new Color32(22, 95, 64, 255),
+                new Color32(42, 127, 67, 255),
+                new Color32(70, 154, 70, 255)
             };
+            Color32 shadow = new Color32(5, 38, 45, 230);
+            Color32 root = new Color32(13, 56, 54, 230);
 
-            int[] baseXs = { 8, 15, 22, 29, 37 };
+            int[] baseXs = { 7, 13, 19, 26, 33, 40 };
             for (int i = 0; i < baseXs.Length; i++)
             {
                 int baseX = baseXs[i];
-                int topY = 12 + (i % 3) * 6;
-                Color32 color = bladeColors[i % bladeColors.Length];
+                int topY = 9 + (i % 4) * 5;
+                Color32 color = bladeColors[(i + 1) % bladeColors.Length];
+                Color32 highlight = bladeColors[(i + 2) % bladeColors.Length];
                 int previousX = baseX;
-                int previousY = 58;
+                int previousY = 59;
 
-                for (int step = 1; step < 7; step++)
+                for (int step = 1; step < 8; step++)
                 {
-                    int y = Mathf.Max(topY, 58 - step * 7);
-                    int x = baseX + Mathf.RoundToInt(Mathf.Sin(step * 0.9f + i) * 4f);
+                    int y = Mathf.Max(topY, 59 - step * 7);
+                    int x = baseX + Mathf.RoundToInt(Mathf.Sin(step * 0.82f + i * 0.74f) * 3.4f);
+                    Line(pixels, 48, 64, previousX - 1, previousY, x - 1, y, shadow);
+                    Line(pixels, 48, 64, previousX + 1, previousY, x + 1, y, shadow);
                     Line(pixels, 48, 64, previousX, previousY, x, y, color);
-                    Line(pixels, 48, 64, previousX + 1, previousY, x + 1, y, color);
+                    if (i % 2 == 0)
+                    {
+                        Line(pixels, 48, 64, previousX, previousY - 1, x, y - 1, highlight);
+                    }
+
                     previousX = x;
                     previousY = y;
                 }
 
-                Line(pixels, 48, 64, baseX, 42, baseX - 5, 35, color);
-                Line(pixels, 48, 64, baseX + 1, 34, baseX + 7, 28, color);
+                Line(pixels, 48, 64, baseX, 43, baseX - 5, 34, shadow);
+                Line(pixels, 48, 64, baseX + 1, 43, baseX - 4, 34, color);
+                if (i < 4)
+                {
+                    Line(pixels, 48, 64, baseX + 1, 36, baseX + 7, 28, shadow);
+                    Line(pixels, 48, 64, baseX + 2, 36, baseX + 8, 28, highlight);
+                }
             }
 
-            Rect(pixels, 48, 64, 4, 58, 40, 4, new Color32(31, 86, 64, 210));
+            Rect(pixels, 48, 64, 7, 58, 34, 2, root);
+            Rect(pixels, 48, 64, 10, 60, 27, 1, new Color32(8, 45, 50, 190));
         });
 
         sprites["claw"] = SaveSprite("claw", 24, 24, pixels =>
@@ -442,13 +457,55 @@ public static class FishBalatroSceneBuilder
             CreateSpriteObject("Water Wave Sprite", sprites["water_wave"], new Vector3(0f, 3.28f, 0f), new Vector3(1.7f, 1f, 1f), 4, waveRoot.transform);
         }
 
-        if (GameObject.Find("Seaweed") == null)
+        GameObject seaweedRoot = GameObject.Find("Seaweed");
+        if (seaweedRoot == null)
         {
-            GameObject seaweedRoot = new GameObject("Seaweed");
+            seaweedRoot = new GameObject("Seaweed");
             CreateSpriteObject("Seaweed Left", sprites["seaweed"], new Vector3(-6.15f, -3.55f, 0f), new Vector3(0.76f, 0.82f, 1f), 5, seaweedRoot.transform);
             CreateSpriteObject("Seaweed Mid", sprites["seaweed"], new Vector3(-1.6f, -3.65f, 0f), new Vector3(0.62f, 0.72f, 1f), 5, seaweedRoot.transform);
             CreateSpriteObject("Seaweed Right", sprites["seaweed"], new Vector3(5.75f, -3.5f, 0f), new Vector3(0.82f, 0.9f, 1f), 5, seaweedRoot.transform);
         }
+
+        ConfigureSeaweedAnimation(seaweedRoot);
+
+        if (GameObject.Find("Sky Seagull") == null)
+        {
+            CreateSkySeagull();
+        }
+    }
+
+    private static void ConfigureSeaweedAnimation(GameObject seaweedRoot)
+    {
+        WavingSeaweed wavingSeaweed = seaweedRoot.GetComponent<WavingSeaweed>();
+        if (wavingSeaweed == null)
+        {
+            wavingSeaweed = seaweedRoot.AddComponent<WavingSeaweed>();
+        }
+
+        wavingSeaweed.waveAngle = 4.5f;
+        wavingSeaweed.waveSpeed = 1.05f;
+        wavingSeaweed.phaseStep = 0.58f;
+        wavingSeaweed.rootDriftAmount = 0f;
+        wavingSeaweed.bottomAnchorInset = 0.02f;
+    }
+
+    private static SkySeagull CreateSkySeagull()
+    {
+        GameObject seagullObject = new GameObject("Sky Seagull");
+        seagullObject.transform.position = new Vector3(-8.8f, 4.45f, 0f);
+        seagullObject.transform.localScale = new Vector3(0.34f, 0.34f, 1f);
+
+        SkySeagull seagull = seagullObject.AddComponent<SkySeagull>();
+        seagull.flightXRange = new Vector2(-9.6f, 9.6f);
+        seagull.flightHeight = 4.45f;
+        seagull.flightSpeed = 1.35f;
+        seagull.bobAmplitude = 0.08f;
+        seagull.bobFrequency = 1.1f;
+        seagull.flapSpeed = 7.5f;
+        seagull.flapAngle = 34f;
+        seagull.sortingOrder = 18;
+        seagull.startFacingRight = true;
+        return seagull;
     }
 
     private static FishPlayerController CreatePlayer(Dictionary<string, Sprite> sprites)
