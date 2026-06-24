@@ -42,6 +42,8 @@ public static class FishBalatroSceneBuilder
         FishPlayerController player = CreatePlayer(sprites);
         FishingLineView line = CreateFishingLine(gameManager, fisherman, player);
         NetSweepHazard netSweep = CreateNetSweepHazard();
+        ClawShotHazard clawShot = CreateClawShotHazard(sprites["claw"]);
+        ElectricWaveHazard electricWave = CreateElectricWaveHazard();
         BaitSpawner spawner = CreateBaitSpawner(gameManager, player, baitPrefabs);
         BigFishAlly bigFish = CreateBigFish(sprites, gameManager);
         FishUIController ui = CreateUi(sprites);
@@ -51,6 +53,8 @@ public static class FishBalatroSceneBuilder
         gameManager.fisherman = fisherman;
         gameManager.fishingLine = line;
         gameManager.netSweep = netSweep;
+        gameManager.clawShot = clawShot;
+        gameManager.electricWave = electricWave;
         gameManager.baitSpawner = spawner;
         gameManager.bigFish = bigFish;
         gameManager.ui = ui;
@@ -67,6 +71,24 @@ public static class FishBalatroSceneBuilder
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log("Fish Balatro main scene rebuilt at " + MainScenePath);
+    }
+
+    [MenuItem("Game Jam/Fish Balatro/Add Environment Animation Props")]
+    public static void AddEnvironmentAnimationProps()
+    {
+        EnsureFolders();
+        Dictionary<string, Sprite> sprites = GenerateSprites();
+
+        if (SceneManager.GetActiveScene().path.Replace("\\", "/") != MainScenePath)
+        {
+            EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+        }
+
+        CreateEnvironmentAnimationProps(sprites);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Debug.Log("Fish Balatro wave and seaweed animation props added.");
     }
 
     private static void EnsureFolders()
@@ -138,6 +160,70 @@ public static class FishBalatroSceneBuilder
             Line(pixels, 34, 52, 24, 31, 33, 46, new Color32(68, 45, 30, 255));
             Rect(pixels, 34, 52, 14, 40, 2, 2, new Color32(18, 18, 18, 255));
             Rect(pixels, 34, 52, 20, 40, 2, 2, new Color32(18, 18, 18, 255));
+        });
+
+        sprites["water_wave"] = SaveSprite("water_wave", 160, 24, pixels =>
+        {
+            for (int x = 0; x < 160; x++)
+            {
+                int crestY = 12 + Mathf.RoundToInt(Mathf.Sin(x * 0.18f) * 4f);
+                int lowerY = 15 + Mathf.RoundToInt(Mathf.Sin(x * 0.18f + 1.8f) * 3f);
+                Rect(pixels, 160, 24, x, crestY, 1, 2, new Color32(117, 224, 246, 215));
+                Rect(pixels, 160, 24, x, lowerY, 1, 2, new Color32(52, 151, 188, 145));
+
+                int sparkle = x % 24;
+                if (sparkle >= 3 && sparkle <= 7)
+                {
+                    Rect(pixels, 160, 24, x, crestY - 2, 1, 1, new Color32(220, 255, 255, 220));
+                }
+            }
+        });
+
+        sprites["seaweed"] = SaveSprite("seaweed", 48, 64, pixels =>
+        {
+            Color32[] bladeColors =
+            {
+                new Color32(25, 118, 82, 255),
+                new Color32(32, 148, 96, 255),
+                new Color32(61, 181, 118, 255),
+                new Color32(17, 95, 72, 255)
+            };
+
+            int[] baseXs = { 8, 15, 22, 29, 37 };
+            for (int i = 0; i < baseXs.Length; i++)
+            {
+                int baseX = baseXs[i];
+                int topY = 12 + (i % 3) * 6;
+                Color32 color = bladeColors[i % bladeColors.Length];
+                int previousX = baseX;
+                int previousY = 58;
+
+                for (int step = 1; step < 7; step++)
+                {
+                    int y = Mathf.Max(topY, 58 - step * 7);
+                    int x = baseX + Mathf.RoundToInt(Mathf.Sin(step * 0.9f + i) * 4f);
+                    Line(pixels, 48, 64, previousX, previousY, x, y, color);
+                    Line(pixels, 48, 64, previousX + 1, previousY, x + 1, y, color);
+                    previousX = x;
+                    previousY = y;
+                }
+
+                Line(pixels, 48, 64, baseX, 42, baseX - 5, 35, color);
+                Line(pixels, 48, 64, baseX + 1, 34, baseX + 7, 28, color);
+            }
+
+            Rect(pixels, 48, 64, 4, 58, 40, 4, new Color32(31, 86, 64, 210));
+        });
+
+        sprites["claw"] = SaveSprite("claw", 24, 24, pixels =>
+        {
+            Line(pixels, 24, 24, 12, 22, 12, 7, new Color32(224, 230, 235, 255));
+            Line(pixels, 24, 24, 12, 7, 5, 2, new Color32(224, 230, 235, 255));
+            Line(pixels, 24, 24, 12, 7, 19, 2, new Color32(224, 230, 235, 255));
+            Line(pixels, 24, 24, 5, 2, 4, 8, new Color32(224, 230, 235, 255));
+            Line(pixels, 24, 24, 19, 2, 20, 8, new Color32(224, 230, 235, 255));
+            Line(pixels, 24, 24, 9, 6, 15, 6, new Color32(164, 176, 188, 255));
+            Rect(pixels, 24, 24, 11, 18, 3, 3, new Color32(138, 148, 158, 255));
         });
 
         sprites["worm"] = SaveSprite("bait_worm", 20, 16, pixels =>
@@ -251,6 +337,7 @@ public static class FishBalatroSceneBuilder
         // and tutorial text. Obstacles can be added later once the core loop is
         // tuned.
         CreateSpriteObject("Water Background", sprites["water_panel"], Vector3.zero, new Vector3(18f, 10.4f, 1f), -20);
+        CreateEnvironmentAnimationProps(sprites);
 
         GameObject surface = CreateSpriteObject("Water Surface", sprites["ui_square"], new Vector3(0f, 3.6f, 0f), new Vector3(17.5f, 0.08f, 1f), 2);
         surface.GetComponent<SpriteRenderer>().color = new Color(0.48f, 0.9f, 1f, 0.8f);
@@ -260,6 +347,23 @@ public static class FishBalatroSceneBuilder
         CreateBoundary("Sea Floor", new Vector2(0f, -4.35f), new Vector2(18f, 0.4f));
 
         CreateWorldText("Tutorial", "Steal bait for score. Press E to attack the fisherman.", new Vector3(0f, -4.05f, 0f), 1.05f, new Color(0.78f, 0.96f, 1f), 60, null);
+    }
+
+    private static void CreateEnvironmentAnimationProps(Dictionary<string, Sprite> sprites)
+    {
+        if (GameObject.Find("Water Wave") == null)
+        {
+            GameObject waveRoot = new GameObject("Water Wave");
+            CreateSpriteObject("Water Wave Sprite", sprites["water_wave"], new Vector3(0f, 3.28f, 0f), new Vector3(1.7f, 1f, 1f), 4, waveRoot.transform);
+        }
+
+        if (GameObject.Find("Seaweed") == null)
+        {
+            GameObject seaweedRoot = new GameObject("Seaweed");
+            CreateSpriteObject("Seaweed Left", sprites["seaweed"], new Vector3(-6.15f, -3.55f, 0f), new Vector3(0.76f, 0.82f, 1f), 5, seaweedRoot.transform);
+            CreateSpriteObject("Seaweed Mid", sprites["seaweed"], new Vector3(-1.6f, -3.65f, 0f), new Vector3(0.62f, 0.72f, 1f), 5, seaweedRoot.transform);
+            CreateSpriteObject("Seaweed Right", sprites["seaweed"], new Vector3(5.75f, -3.5f, 0f), new Vector3(0.82f, 0.9f, 1f), 5, seaweedRoot.transform);
+        }
     }
 
     private static FishPlayerController CreatePlayer(Dictionary<string, Sprite> sprites)
@@ -300,6 +404,7 @@ public static class FishBalatroSceneBuilder
         fisherman.fishermanRenderer = bodyObject.GetComponent<SpriteRenderer>();
         fisherman.exclamationText = exclamation;
         fisherman.nameText = name;
+        fisherman.SetVariant(FishFishermanType.Net, 1);
         return fisherman;
     }
 
@@ -356,6 +461,36 @@ public static class FishBalatroSceneBuilder
         netSweep.recoverSeconds = 0.25f;
         netObject.SetActive(false);
         return netSweep;
+    }
+
+    private static ClawShotHazard CreateClawShotHazard(Sprite clawSprite)
+    {
+        GameObject clawObject = new GameObject("Claw Shot Hazard");
+        ClawShotHazard clawShot = clawObject.AddComponent<ClawShotHazard>();
+        clawShot.clawSprite = clawSprite;
+        clawShot.pivotPosition = new Vector3(0f, 3.45f, 0f);
+        clawShot.shotLength = 11f;
+        clawShot.warningSeconds = 0.45f;
+        clawShot.shotSeconds = 0.75f;
+        clawShot.betweenShotsSeconds = 0.18f;
+        clawObject.SetActive(false);
+        return clawShot;
+    }
+
+    private static ElectricWaveHazard CreateElectricWaveHazard()
+    {
+        GameObject electricObject = new GameObject("Electric Wave Hazard");
+        ElectricWaveHazard electricWave = electricObject.AddComponent<ElectricWaveHazard>();
+        electricWave.xMin = -8f;
+        electricWave.xMax = 8f;
+        electricWave.topY = 2.8f;
+        electricWave.bottomY = -3.2f;
+        electricWave.waveSpacing = 1.35f;
+        electricWave.warningSeconds = 0.35f;
+        electricWave.activeSeconds = 0.35f;
+        electricWave.afterWaveSeconds = 0.18f;
+        electricObject.SetActive(false);
+        return electricWave;
     }
 
     private static BigFishAlly CreateBigFish(Dictionary<string, Sprite> sprites, FishGameManager gameManager)
@@ -615,6 +750,29 @@ public static class FishBalatroSceneBuilder
 
     private static Sprite SaveSprite(string name, int width, int height, Action<Color32[]> draw)
     {
+        string path = ArtPath + "/" + name + ".png";
+        if (File.Exists(path))
+        {
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+            TextureImporter existingImporter = AssetImporter.GetAtPath(path) as TextureImporter;
+            if (existingImporter != null)
+            {
+                existingImporter.textureType = TextureImporterType.Sprite;
+                existingImporter.spriteImportMode = SpriteImportMode.Single;
+                existingImporter.spritePixelsPerUnit = PixelsPerUnit;
+                existingImporter.filterMode = FilterMode.Point;
+                existingImporter.textureCompression = TextureImporterCompression.Uncompressed;
+                existingImporter.mipmapEnabled = false;
+                existingImporter.SaveAndReimport();
+            }
+
+            Sprite existingSprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (existingSprite != null)
+            {
+                return existingSprite;
+            }
+        }
+
         Color32[] pixels = new Color32[width * height];
         for (int i = 0; i < pixels.Length; i++)
         {
@@ -628,7 +786,6 @@ public static class FishBalatroSceneBuilder
         texture.SetPixels32(pixels);
         texture.Apply();
 
-        string path = ArtPath + "/" + name + ".png";
         File.WriteAllBytes(path, texture.EncodeToPNG());
         UnityEngine.Object.DestroyImmediate(texture);
 

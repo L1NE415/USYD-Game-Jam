@@ -41,7 +41,7 @@ public class FishUIController : MonoBehaviour
         SetText(attackCostText, "Press E Attack: " + game.AttackCost);
         SetText(statusText, game.StatusText);
         SetText(comboText, game.ComboText);
-        SetText(netSweepText, "Net Sweep " + Mathf.CeilToInt(game.NetSweepProgress * 100f) + "%");
+        SetText(netSweepText, game.CaptureToolName + " " + Mathf.CeilToInt(game.CaptureToolProgress * 100f) + "%");
         SetText(gameOverText, "CAUGHT IN THE NET\nFinal Score: " + game.TotalScore + "\nPress R to restart");
 
         if (alertFill != null)
@@ -52,7 +52,7 @@ public class FishUIController : MonoBehaviour
         }
 
         // This panel is a compact net-sweep warning meter.
-        bool showNetSweep = game.State == FishGameState.NetSweep;
+        bool showNetSweep = game.State == FishGameState.FishingHazard;
         if (netSweepPanel != null)
         {
             netSweepPanel.SetActive(showNetSweep);
@@ -65,7 +65,7 @@ public class FishUIController : MonoBehaviour
 
         if (netSweepFill != null)
         {
-            netSweepFill.fillAmount = Mathf.Clamp01(game.NetSweepProgress);
+            netSweepFill.fillAmount = Mathf.Clamp01(game.CaptureToolProgress);
         }
     }
 

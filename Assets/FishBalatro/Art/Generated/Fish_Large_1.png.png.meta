@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: aa0811efec3521743a8389ab80e3bb11
+guid: db6c93fb452fdec47a6bef9991ceffca
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3431148790671953584
-    second: water_panel_0
+      213: -5879061812727100730
+    second: Fish_Large_1.png_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: water_panel_0
+      name: Fish_Large_1.png_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1535
-        height: 1024
+        x: 83
+        y: 248
+        width: 1055
+        height: 847
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 051bc789a5c1260d0800000000000000
-      internalID: -3431148790671953584
+      spriteID: 6ca46df0e60696ea0800000000000000
+      internalID: -5879061812727100730
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      water_panel_0: -3431148790671953584
+      Fish_Large_1.png_0: -5879061812727100730
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

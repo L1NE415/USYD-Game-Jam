@@ -23,11 +23,10 @@ public static class FishBalatroStartupSceneLoader
         if (File.Exists(MainScenePath))
         {
             EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
-            ApplySpriteArtwork();
         }
     }
 
-    [MenuItem("Game Jam/Fish Balatro/Apply Sprite Artwork")]
+    [MenuItem("Game Jam/Fish Balatro/Repair Missing Sprite Artwork")]
     public static void ApplySpriteArtwork()
     {
         Scene activeScene = SceneManager.GetActiveScene();
@@ -46,7 +45,7 @@ public static class FishBalatroStartupSceneLoader
         if (changed)
         {
             EditorSceneManager.MarkSceneDirty(activeScene);
-            Debug.Log("Fish Balatro sprite artwork applied to Main.unity.");
+            Debug.Log("Fish Balatro missing sprite artwork repaired in Main.unity.");
         }
     }
 
@@ -62,7 +61,6 @@ public static class FishBalatroStartupSceneLoader
         Scene activeScene = SceneManager.GetActiveScene();
         if (!string.IsNullOrEmpty(activeScene.path) || !LooksLikeDefaultBlankScene(activeScene))
         {
-            ApplySpriteArtwork();
             return;
         }
 
@@ -94,19 +92,19 @@ public static class FishBalatroStartupSceneLoader
             return false;
         }
 
+        if (renderer.sprite != null)
+        {
+            return false;
+        }
+
         Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/FishBalatro/Art/Generated/" + spriteName + ".png");
         if (sprite == null)
         {
             return false;
         }
 
-        bool changed = false;
-        if (renderer.sprite != sprite)
-        {
-            renderer.sprite = sprite;
-            changed = true;
-        }
-
+        renderer.sprite = sprite;
+        bool changed = true;
         if (renderer.color != color)
         {
             renderer.color = color;

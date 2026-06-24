@@ -10,12 +10,21 @@ public enum FishBaitType
     FakeBait
 }
 
+// Fisherman variants define both the warning appearance and the capture tool
+// used when Alert reaches 100.
+public enum FishFishermanType
+{
+    Net,
+    Claw,
+    Electric
+}
+
 // High-level game states owned by FishGameManager. Most scripts read this
 // instead of keeping their own copies of the current mode.
 public enum FishGameState
 {
     Normal,
-    NetSweep,
+    FishingHazard,
     Recovering,
     Caught,
     BigFishAttack

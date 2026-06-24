@@ -11,9 +11,9 @@ using UnityEngine.InputSystem;
 //
 // Score model for the current design:
 // - TotalScore is the visible score and also the currency spent when pressing E to attack.
-// - CurrentRunScore is the amount gained during the current greed streak; dodging a net
+// - CurrentRunScore is the amount gained during the current greed streak; dodging a tool
 //   clears this risk, while getting caught ends the run.
-// - Alert triggers a large pendulum net sweep when it reaches 100.
+// - Alert triggers the current fisherman's capture tool when it reaches 100.
 public class FishGameManager : MonoBehaviour
 {
     public static FishGameManager Instance { get; private set; }
@@ -23,6 +23,8 @@ public class FishGameManager : MonoBehaviour
     public FishermanController fisherman;
     public FishingLineView fishingLine;
     public NetSweepHazard netSweep;
+    public ClawShotHazard clawShot;
+    public ElectricWaveHazard electricWave;
     public BaitSpawner baitSpawner;
     public BigFishAlly bigFish;
     public FishUIController ui;
@@ -35,7 +37,7 @@ public class FishGameManager : MonoBehaviour
     public int baseAttackCost = 240;
     public int attackCostStep = 140;
 
-    [Header("Net Sweep")]
+    [Header("Capture Tools")]
     public float netDodgedRecoverySeconds = 0.55f;
 
     private FishGameState state = FishGameState.Normal;
@@ -61,7 +63,10 @@ public class FishGameManager : MonoBehaviour
     public int NextBaitMultiplier => nextBaitMultiplier;
     public int Level => level;
     public float Alert => alert;
-    public float NetSweepProgress => state == FishGameState.NetSweep && netSweep != null ? netSweep.Progress : 0f;
+    public FishFishermanType CurrentFishermanType => GetFishermanTypeForLevel(level);
+    public string CaptureToolName => GetCaptureToolName(CurrentFishermanType);
+    public float CaptureToolProgress => state == FishGameState.FishingHazard ? GetActiveCaptureToolProgress() : 0f;
+    public float NetSweepProgress => CaptureToolProgress;
     public bool IsGameOver => state == FishGameState.Caught;
 
     public string StatusText
@@ -98,6 +103,18 @@ public class FishGameManager : MonoBehaviour
         {
             netSweep.Hide();
         }
+
+        if (clawShot != null)
+        {
+            clawShot.Hide();
+        }
+
+        if (electricWave != null)
+        {
+            electricWave.Hide();
+        }
+
+        ApplyFishermanVariant();
 
         if (baitSpawner != null)
         {
@@ -165,9 +182,9 @@ public class FishGameManager : MonoBehaviour
 
     public void OnPlayerBurstDash()
     {
-        if (state == FishGameState.NetSweep)
+        if (state == FishGameState.FishingHazard)
         {
-            StatusText = "Dash away from the sweeping net.";
+            StatusText = "Dash away from the capture tool.";
             return;
         }
     }
@@ -204,10 +221,7 @@ public class FishGameManager : MonoBehaviour
             fishingLine.SetLineVisible(false);
         }
 
-        if (netSweep != null)
-        {
-            netSweep.Hide();
-        }
+        HideAllCaptureTools();
 
         if (fisherman != null)
         {
@@ -225,13 +239,15 @@ public class FishGameManager : MonoBehaviour
 
         int nextLevel = level + 1;
 
+        FishFishermanType nextType = GetFishermanTypeForLevel(nextLevel);
         if (fisherman != null)
         {
-            yield return fisherman.FleeAndReturn(nextLevel);
+            yield return fisherman.FleeAndReturn(nextLevel, nextType);
         }
 
         level = nextLevel;
-        statusText = "Level " + level + ": new fisherman, greedier bait.";
+        ApplyFishermanVariant();
+        statusText = "Level " + level + ": " + CaptureToolName + " fisherman arrives.";
         state = FishGameState.Normal;
 
         if (baitSpawner != null)
@@ -303,26 +319,28 @@ public class FishGameManager : MonoBehaviour
 
         if (alert >= 100f)
         {
-            BeginNetSweep();
+            BeginCaptureTool();
         }
     }
 
-    private void BeginNetSweep()
+    private void BeginCaptureTool()
     {
         if (state != FishGameState.Normal)
         {
             return;
         }
 
-        StartCoroutine(NetSweepRoutine());
+        StartCoroutine(CaptureToolRoutine());
     }
 
-    private IEnumerator NetSweepRoutine()
+    private IEnumerator CaptureToolRoutine()
     {
-        // Alert full is not instant death. It starts a large, readable sweep
-        // hazard that the player can dodge through movement.
-        state = FishGameState.NetSweep;
-        statusText = "FISHERMAN DROPS A NET! DODGE THE SWING!";
+        // Alert full is not instant death. It starts the current fisherman's
+        // readable capture tool pattern that the player can dodge.
+        state = FishGameState.FishingHazard;
+        FishFishermanType type = CurrentFishermanType;
+        string toolName = GetCaptureToolName(type);
+        statusText = toolName.ToUpperInvariant() + " WARNING! DODGE!";
 
         if (fisherman != null)
         {
@@ -337,27 +355,50 @@ public class FishGameManager : MonoBehaviour
 
         if (player != null)
         {
-            ShowPopup(player.transform.position + Vector3.up * 0.85f, "NET!", Color.red);
+            ShowPopup(player.transform.position + Vector3.up * 0.85f, toolName.ToUpperInvariant() + "!", Color.red);
         }
 
-        if (netSweep == null)
-        {
-            netSweep = NetSweepHazard.CreateRuntimeNet();
-        }
+        yield return PlayCaptureTool(type);
 
-        yield return netSweep.PlaySweep(player, level);
-
-        if (netSweep.CaughtPlayer)
+        if (WasCaughtByTool(type))
         {
             CatchFish();
         }
         else
         {
-            EscapeNet();
+            EscapeCaptureTool(toolName);
         }
     }
 
-    private void EscapeNet()
+    private IEnumerator PlayCaptureTool(FishFishermanType type)
+    {
+        switch (type)
+        {
+            case FishFishermanType.Claw:
+                if (clawShot == null)
+                {
+                    clawShot = ClawShotHazard.CreateRuntimeClaw();
+                }
+                yield return clawShot.PlayVolley(player, level);
+                break;
+            case FishFishermanType.Electric:
+                if (electricWave == null)
+                {
+                    electricWave = ElectricWaveHazard.CreateRuntimeElectric();
+                }
+                yield return electricWave.PlayWaves(player, level);
+                break;
+            default:
+                if (netSweep == null)
+                {
+                    netSweep = NetSweepHazard.CreateRuntimeNet();
+                }
+                yield return netSweep.PlaySweep(player, level);
+                break;
+        }
+    }
+
+    private void EscapeCaptureTool(string toolName)
     {
         if (fisherman != null)
         {
@@ -370,10 +411,10 @@ public class FishGameManager : MonoBehaviour
             fishingLine.SetLineVisible(false);
         }
 
-        // Dodging the net keeps TotalScore. It only clears the current
+        // Dodging a tool keeps TotalScore. It only clears the current
         // risk/combo state so the player can start a fresh greed streak.
         ResetRunState();
-        statusText = "DODGED THE NET! Keep stealing or press E to attack.";
+        statusText = "DODGED THE " + toolName.ToUpperInvariant() + "! Keep stealing or press E to attack.";
         comboText = "";
         StartCoroutine(ReturnToNormalAfter(FishGameState.Recovering, netDodgedRecoverySeconds));
     }
@@ -381,7 +422,7 @@ public class FishGameManager : MonoBehaviour
     private void CatchFish()
     {
         state = FishGameState.Caught;
-        statusText = "CAUGHT IN THE NET! Press R to restart.";
+        statusText = "CAUGHT BY THE " + CaptureToolName.ToUpperInvariant() + "! Press R to restart.";
         comboText = "Final score: " + totalScore;
 
         if (player != null)
@@ -408,7 +449,7 @@ public class FishGameManager : MonoBehaviour
         }
 
         // Game over is intentional here. The player restarts the scene with R
-        // instead of automatically recovering after touching the net.
+        // instead of automatically recovering after touching a capture tool.
     }
 
     private IEnumerator ReturnToNormalAfter(FishGameState temporaryState, float delay)
@@ -429,6 +470,84 @@ public class FishGameManager : MonoBehaviour
         multiplier = 1;
         nextBaitMultiplier = 1;
         hasPreviousEffect = false;
+    }
+
+    private void ApplyFishermanVariant()
+    {
+        if (fisherman != null)
+        {
+            fisherman.SetVariant(CurrentFishermanType, level);
+        }
+    }
+
+    private float GetActiveCaptureToolProgress()
+    {
+        switch (CurrentFishermanType)
+        {
+            case FishFishermanType.Claw:
+                return clawShot != null ? clawShot.Progress : 0f;
+            case FishFishermanType.Electric:
+                return electricWave != null ? electricWave.Progress : 0f;
+            default:
+                return netSweep != null ? netSweep.Progress : 0f;
+        }
+    }
+
+    private bool WasCaughtByTool(FishFishermanType type)
+    {
+        switch (type)
+        {
+            case FishFishermanType.Claw:
+                return clawShot != null && clawShot.CaughtPlayer;
+            case FishFishermanType.Electric:
+                return electricWave != null && electricWave.CaughtPlayer;
+            default:
+                return netSweep != null && netSweep.CaughtPlayer;
+        }
+    }
+
+    private void HideAllCaptureTools()
+    {
+        if (netSweep != null)
+        {
+            netSweep.Hide();
+        }
+
+        if (clawShot != null)
+        {
+            clawShot.Hide();
+        }
+
+        if (electricWave != null)
+        {
+            electricWave.Hide();
+        }
+    }
+
+    private static FishFishermanType GetFishermanTypeForLevel(int targetLevel)
+    {
+        switch (Mathf.Abs(targetLevel - 1) % 3)
+        {
+            case 1:
+                return FishFishermanType.Claw;
+            case 2:
+                return FishFishermanType.Electric;
+            default:
+                return FishFishermanType.Net;
+        }
+    }
+
+    private static string GetCaptureToolName(FishFishermanType type)
+    {
+        switch (type)
+        {
+            case FishFishermanType.Claw:
+                return "Claw";
+            case FishFishermanType.Electric:
+                return "Electric Wave";
+            default:
+                return "Net";
+        }
     }
 
     private void ShowPopup(Vector3 position, string message, Color color)

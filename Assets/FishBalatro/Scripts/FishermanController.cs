@@ -16,6 +16,7 @@ public class FishermanController : MonoBehaviour
     private Vector3 homePosition;
     private Color homeColor = Color.white;
 
+    public FishFishermanType Variant { get; private set; } = FishFishermanType.Net;
     public Vector3 LineAnchorPosition => lineAnchor != null ? lineAnchor.position : transform.position;
 
     private void Awake()
@@ -28,6 +29,29 @@ public class FishermanController : MonoBehaviour
         }
 
         SetNotice(false);
+    }
+
+    public void SetVariant(FishFishermanType variant, int level)
+    {
+        Variant = variant;
+        homeColor = GetVariantColor(variant);
+
+        if (fishermanRenderer != null)
+        {
+            fishermanRenderer.color = homeColor;
+        }
+
+        if (boatRenderer != null)
+        {
+            // Keep the boat shape the same while adding a slight tint so the
+            // whole rig reads as a different fisherman type.
+            boatRenderer.color = Color.Lerp(Color.white, homeColor, 0.18f);
+        }
+
+        if (nameText != null)
+        {
+            nameText.text = GetVariantName(variant) + " " + level;
+        }
     }
 
     public void SetNotice(bool noticed)
@@ -49,11 +73,11 @@ public class FishermanController : MonoBehaviour
     {
         if (boatRenderer != null)
         {
-            boatRenderer.color = warning ? new Color(1f, 0.45f, 0.35f) : Color.white;
+            boatRenderer.color = warning ? new Color(1f, 0.45f, 0.35f) : Color.Lerp(Color.white, homeColor, 0.18f);
         }
     }
 
-    public IEnumerator FleeAndReturn(int nextLevel)
+    public IEnumerator FleeAndReturn(int nextLevel, FishFishermanType nextVariant)
     {
         // Called after the big fish attack. The current fisherman leaves the
         // screen and a new numbered fisherman slides in for the next level.
@@ -70,13 +94,35 @@ public class FishermanController : MonoBehaviour
 
         SetNotice(false);
         transform.position = homePosition + new Vector3(-11f, 0.55f, 0f);
-
-        if (nameText != null)
-        {
-            nameText.text = "Fisherman " + nextLevel;
-        }
+        SetVariant(nextVariant, nextLevel);
 
         yield return MoveTo(transform.position, homePosition, 0.8f);
+    }
+
+    public static string GetVariantName(FishFishermanType variant)
+    {
+        switch (variant)
+        {
+            case FishFishermanType.Claw:
+                return "Claw Fisherman";
+            case FishFishermanType.Electric:
+                return "Electric Fisherman";
+            default:
+                return "Net Fisherman";
+        }
+    }
+
+    private static Color GetVariantColor(FishFishermanType variant)
+    {
+        switch (variant)
+        {
+            case FishFishermanType.Claw:
+                return new Color(1f, 0.58f, 0.22f);
+            case FishFishermanType.Electric:
+                return new Color(1f, 0.92f, 0.28f);
+            default:
+                return new Color(0.35f, 0.9f, 1f);
+        }
     }
 
     private IEnumerator MoveTo(Vector3 start, Vector3 end, float duration)
