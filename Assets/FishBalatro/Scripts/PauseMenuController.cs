@@ -10,6 +10,8 @@ public class PauseMenuController : MonoBehaviour
     [Header("Scene")]
     [SerializeField] private string mainMenuSceneName = "MainMenuScene";
 
+    [SerializeField] private HighScoreController highScoreController;
+
     private VisualElement root;
     private Button resumeButton;
     private Button quitButton;
@@ -26,21 +28,11 @@ public class PauseMenuController : MonoBehaviour
         if (resumeButton != null)
         {
             resumeButton.clicked += OnResumeButtonClicked;
-            Debug.Log("继续游戏按钮绑定成功");
-        }
-        else
-        {
-            Debug.LogError("找不到 resume-button，请检查 UI Builder 里的按钮 Name");
         }
 
         if (quitButton != null)
         {
             quitButton.clicked += OnQuitButtonClicked;
-            Debug.Log("退出游戏按钮绑定成功");
-        }
-        else
-        {
-            Debug.LogError("找不到 quit-button，请检查 UI Builder 里的按钮 Name");
         }
 
         HidePauseMenu();
@@ -61,6 +53,11 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
+        if (highScoreController != null && highScoreController.IsShowing)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (isPaused)
@@ -83,7 +80,7 @@ public class PauseMenuController : MonoBehaviour
 
         UnlockCursor();
 
-        Debug.Log("游戏暂停，菜单显示");
+        Debug.Log("Game Paused");
     }
 
     private void ResumeGame()
@@ -95,7 +92,7 @@ public class PauseMenuController : MonoBehaviour
 
         LockCursorIfNeeded();
 
-        Debug.Log("继续游戏，菜单隐藏");
+        Debug.Log("Resume Game");
     }
 
     private void HidePauseMenu()
@@ -108,7 +105,6 @@ public class PauseMenuController : MonoBehaviour
 
     private void OnResumeButtonClicked()
     {
-        Debug.Log("点击了继续游戏按钮");
         ResumeGame();
     }
 
@@ -131,7 +127,6 @@ public class PauseMenuController : MonoBehaviour
 
     private void LockCursorIfNeeded()
     {
-        // 如果你的游戏不需要锁鼠标，可以把这里两行注释掉
         //UnityEngine.Cursor.visible = false;
         //UnityEngine.Cursor.lockState = CursorLockMode.Locked;
     }

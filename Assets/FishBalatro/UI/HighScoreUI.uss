@@ -1,0 +1,113 @@
+#high-score-root {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#high-score-panel {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+#button-row {
+    width: 440px;
+    height: 60px;
+
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+
+    margin-top: 24px;
+}
+
+#high-score-title {
+    font-size: 32px;
+    color: white;
+    -unity-font-style: bold;
+    unity-text-align: middle-center;
+
+    margin-bottom: 24px;
+}
+
+#score-1,
+#score-2,
+#score-3,
+#score-4,
+#score-5 {
+    width: 300px;
+    height: 34px;
+
+    font-size: 20px;
+    color: rgba(220, 245, 255, 1);
+
+    unity-text-align: middle-center;
+
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+#score-1 {
+    color: rgba(255, 235, 120, 1);
+    font-size: 23px;
+    -unity-font-style: bold;
+}
+
+#score-2 {
+    color: rgba(220, 240, 255, 1);
+    font-size: 21px;
+    -unity-font-style: bold;
+}
+
+#score-3 {
+    color: rgba(205, 235, 245, 1);
+    font-size: 20px;
+}
+
+#score-4,
+#score-5 {
+    color: rgba(170, 215, 230, 1);
+    font-size: 19px;
+}
+
+#back-button,
+#clear-button {
+    width: 160px;
+    height: 44px;
+
+    margin-left: 8px;
+    margin-right: 8px;
+
+    background-color: rgba(11, 79, 108, 0.75);
+    color: white;
+
+    font-size: 18px;
+    -unity-font-style: bold;
+    unity-text-align: middle-center;
+
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+
+    border-top-color: rgba(158, 235, 255, 1);
+    border-right-color: rgba(158, 235, 255, 1);
+    border-bottom-color: rgba(158, 235, 255, 1);
+    border-left-color: rgba(158, 235, 255, 1);
+}
+
+#back-button:hover,
+#clear-button:hover {
+    background-color: rgba(27, 167, 201, 0.9);
+}
+
+#back-button:active,
+#clear-button:active {
+    background-color: rgba(8, 60, 84, 1);
+}

@@ -14,7 +14,6 @@ public class UIToolkitMouseDebugger : MonoBehaviour
         {
             Vector2 mousePosition = Input.mousePosition;
 
-            // Unity 鼠标坐标原点在左下，UI Toolkit panel 坐标原点在左上
             Vector2 panelPosition = new Vector2(
                 mousePosition.x,
                 Screen.height - mousePosition.y
@@ -25,15 +24,15 @@ public class UIToolkitMouseDebugger : MonoBehaviour
             if (pickedElement != null)
             {
                 Debug.Log(
-                    "UI Toolkit 点到了: " +
+                    "UI Toolkit Clicked: " +
                     pickedElement.name +
-                    " | 类型: " +
+                    " | Type: " +
                     pickedElement.GetType().Name
                 );
             }
             else
             {
-                Debug.Log("UI Toolkit 没有点到任何元素");
+                Debug.Log("UI Toolkit No element was clicked");
             }
         }
     }

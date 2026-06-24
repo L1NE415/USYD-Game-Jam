@@ -423,12 +423,14 @@ public class FishGameManager : MonoBehaviour
     private void CatchFish()
     {
         state = FishGameState.Caught;
-        statusText = "CAUGHT BY THE " + CaptureToolName.ToUpperInvariant() + "! Press R to restart.";
-        comboText = "Final score: " + totalScore;
+        HighScoreController.AddScore(TotalScore);
+        //statusText = "CAUGHT BY THE " + CaptureToolName.ToUpperInvariant() + "! Press R to restart.";
+        //comboText = "Final score: " + totalScore;
 
         if (player != null)
         {
-            ShowPopup(player.transform.position, "CAUGHT!", Color.red);
+            //ShowPopup(player.transform.position, "CAUGHT!", Color.red);
+
         }
 
         if (baitSpawner != null)
