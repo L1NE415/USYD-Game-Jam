@@ -5,8 +5,8 @@ using UnityEngine;
 // Owns the fisherman presentation: notice flash, danger tint, optional line
 // anchor position, and the flee/return animation between levels.
 //
-// Artist note: the three child roots named "Claw Fisherman", "Electric
-// Fisherman", and "Net Fisherman" are intentionally real scene entities.
+// Artist note: the child roots named "Claw Fisherman", "Electric
+// Fisherman", "Net Fisherman", and "Commercial Fishing Ship" are intentionally real scene entities.
 // Replace their sprites or add Animators there when making final fisherman art.
 [ExecuteAlways]
 public class FishermanController : MonoBehaviour
@@ -33,6 +33,7 @@ public class FishermanController : MonoBehaviour
     public FishermanVariantEntity clawFisherman = new FishermanVariantEntity { type = FishFishermanType.Claw };
     public FishermanVariantEntity electricFisherman = new FishermanVariantEntity { type = FishFishermanType.Electric };
     public FishermanVariantEntity netFisherman = new FishermanVariantEntity { type = FishFishermanType.Net };
+    public FishermanVariantEntity bossFisherman = new FishermanVariantEntity { type = FishFishermanType.Boss };
 
     private Vector3 homePosition;
     private Color homeColor = Color.white;
@@ -166,8 +167,8 @@ public class FishermanController : MonoBehaviour
         changed |= EnsureEntity(ref clawFisherman, FishFishermanType.Claw, "Claw Fisherman", boatSprite, bodySprite);
         changed |= EnsureEntity(ref electricFisherman, FishFishermanType.Electric, "Electric Fisherman", boatSprite, bodySprite);
         changed |= EnsureEntity(ref netFisherman, FishFishermanType.Net, "Net Fisherman", boatSprite, bodySprite);
-        changed |= DisableLegacyTemplateRenderer(boatRenderer, "Boat");
-        changed |= DisableLegacyTemplateRenderer(fishermanRenderer, "Fisherman");
+        changed |= EnsureEntity(ref bossFisherman, FishFishermanType.Boss, "Commercial Fishing Ship", boatSprite, bodySprite);
+        changed |= DisableLegacyTemplateObjects();
 
         activeEntity = GetEntity(Variant);
         SetOnlyActiveEntity(activeEntity);
@@ -189,10 +190,15 @@ public class FishermanController : MonoBehaviour
         {
             netFisherman = new FishermanVariantEntity();
         }
+        if (bossFisherman == null)
+        {
+            bossFisherman = new FishermanVariantEntity();
+        }
 
         clawFisherman.type = FishFishermanType.Claw;
         electricFisherman.type = FishFishermanType.Electric;
         netFisherman.type = FishFishermanType.Net;
+        bossFisherman.type = FishFishermanType.Boss;
     }
 
     private bool EnsureEntity(ref FishermanVariantEntity entity, FishFishermanType type, string rootName, Sprite boatSprite, Sprite bodySprite)
@@ -229,6 +235,17 @@ public class FishermanController : MonoBehaviour
         changed |= EnsureMarker(ref entity.toolPropAnchor, entity.root.transform, GetToolPropName(type), new Vector3(0.72f, 0.66f, 0f));
         changed |= EnsureText(ref entity.exclamationText, entity.root.transform, "Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70);
         changed |= EnsureText(ref entity.nameText, entity.root.transform, "FishermanName", GetVariantName(type), new Vector3(-0.85f, 1.48f, 0f), 0.85f, Color.white, 65);
+
+        if (type == FishFishermanType.Boss)
+        {
+            entity.boatRenderer.transform.localScale = new Vector3(1.45f, 1.18f, 1f);
+            entity.fishermanRenderer.transform.localPosition = new Vector3(0.42f, 0.88f, 0f);
+            entity.fishermanRenderer.transform.localScale = new Vector3(1.08f, 1.08f, 1f);
+            entity.lineAnchor.localPosition = new Vector3(1.75f, 0.3f, 0f);
+            entity.toolPropAnchor.localPosition = new Vector3(1.05f, 0.78f, 0f);
+            entity.exclamationText.transform.localPosition = new Vector3(0.62f, 1.72f, 0f);
+            entity.nameText.transform.localPosition = new Vector3(-0.9f, 1.72f, 0f);
+        }
 
         return changed;
     }
@@ -334,14 +351,27 @@ public class FishermanController : MonoBehaviour
         return changed;
     }
 
-    private bool DisableLegacyTemplateRenderer(SpriteRenderer renderer, string expectedName)
+    private bool DisableLegacyTemplateObjects()
     {
-        if (renderer == null || renderer.transform.parent != transform || renderer.gameObject.name != expectedName || !renderer.enabled)
+        bool changed = false;
+        changed |= DisableDirectChild("Boat");
+        changed |= DisableDirectChild("Fisherman");
+        changed |= DisableDirectChild("Line Anchor");
+        changed |= DisableDirectChild("Tool Prop Anchor");
+        changed |= DisableDirectChild("Notice");
+        changed |= DisableDirectChild("FishermanName");
+        return changed;
+    }
+
+    private bool DisableDirectChild(string childName)
+    {
+        Transform child = transform.Find(childName);
+        if (child == null || !child.gameObject.activeSelf)
         {
             return false;
         }
 
-        renderer.enabled = false;
+        child.gameObject.SetActive(false);
         return true;
     }
 
@@ -353,6 +383,8 @@ public class FishermanController : MonoBehaviour
                 return clawFisherman;
             case FishFishermanType.Electric:
                 return electricFisherman;
+            case FishFishermanType.Boss:
+                return bossFisherman;
             default:
                 return netFisherman;
         }
@@ -363,6 +395,7 @@ public class FishermanController : MonoBehaviour
         SetEntityVisible(clawFisherman, entity);
         SetEntityVisible(electricFisherman, entity);
         SetEntityVisible(netFisherman, entity);
+        SetEntityVisible(bossFisherman, entity);
     }
 
     private static void SetEntityVisible(FishermanVariantEntity entity, FishermanVariantEntity active)
@@ -396,6 +429,8 @@ public class FishermanController : MonoBehaviour
                 return "Claw Fisherman";
             case FishFishermanType.Electric:
                 return "Electric Fisherman";
+            case FishFishermanType.Boss:
+                return "Commercial Fishing Ship";
             default:
                 return "Net Fisherman";
         }
@@ -409,6 +444,8 @@ public class FishermanController : MonoBehaviour
                 return new Color(1f, 0.58f, 0.22f);
             case FishFishermanType.Electric:
                 return new Color(1f, 0.92f, 0.28f);
+            case FishFishermanType.Boss:
+                return new Color(0.95f, 0.18f, 0.16f);
             default:
                 return new Color(0.35f, 0.9f, 1f);
         }
@@ -422,6 +459,8 @@ public class FishermanController : MonoBehaviour
                 return "Claw Tool Prop";
             case FishFishermanType.Electric:
                 return "Electric Tool Prop";
+            case FishFishermanType.Boss:
+                return "All Capture Tools Prop";
             default:
                 return "Net Tool Prop";
         }

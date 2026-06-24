@@ -47,6 +47,7 @@ public static class FishBalatroSceneBuilder
         ClawShotHazard clawShot = CreateClawShotHazard(sprites["claw"], captureTools);
         ElectricWaveHazard electricWave = CreateElectricWaveHazard(captureTools);
         BaitSpawner spawner = CreateBaitSpawner(gameManager, player, baitPrefabs);
+        CreateBigFishCave(sprites);
         BigFishAlly bigFish = CreateBigFish(sprites, gameManager);
         FishUIController ui = CreateUi(sprites);
         Transform respawn = CreateMarker("PlayerRespawn", new Vector3(0f, -1.2f, 0f));
@@ -181,6 +182,22 @@ public static class FishBalatroSceneBuilder
             Rect(pixels, 72, 36, 58, 9, 9, 2, new Color32(9, 24, 31, 255));
             Rect(pixels, 72, 36, 60, 11, 2, 3, new Color32(240, 250, 245, 255));
             Rect(pixels, 72, 36, 64, 11, 2, 3, new Color32(240, 250, 245, 255));
+        });
+
+        sprites["big_fish_head"] = LoadGeneratedSprite("big_fish_head.png") ?? sprites["big_fish"];
+
+        sprites["big_fish_cave"] = LoadGeneratedSprite("big_fish_cave.png") ?? SaveSprite("big_fish_cave", 96, 64, pixels =>
+        {
+            Ellipse(pixels, 96, 64, 48, 30, 40, 24, new Color32(22, 55, 76, 255));
+            Ellipse(pixels, 96, 64, 52, 34, 24, 15, new Color32(7, 17, 27, 255));
+            StrokeEllipse(pixels, 96, 64, 48, 30, 40, 24, new Color32(71, 112, 135, 255), 4);
+            Rect(pixels, 96, 64, 6, 9, 84, 9, new Color32(18, 42, 58, 255));
+        });
+
+        sprites["big_fish_cave_shadow"] = SaveSprite("big_fish_cave_shadow", 96, 54, pixels =>
+        {
+            Ellipse(pixels, 96, 54, 48, 27, 39, 22, new Color32(3, 8, 14, 230));
+            Ellipse(pixels, 96, 54, 52, 28, 29, 16, new Color32(8, 18, 30, 220));
         });
 
         sprites["boat"] = SaveSprite("boat", 128, 36, pixels =>
@@ -443,6 +460,13 @@ public static class FishBalatroSceneBuilder
         CircleCollider2D collider = playerObject.AddComponent<CircleCollider2D>();
         collider.radius = 0.43f;
         FishPlayerController player = playerObject.AddComponent<FishPlayerController>();
+        player.arenaMin = FishPlayerController.DefaultArenaMin;
+        player.arenaMax = FishPlayerController.DefaultArenaMax;
+        player.useBoundaryObjects = true;
+        player.leftWallBoundary = GameObject.Find("Wall Left")?.transform;
+        player.rightWallBoundary = GameObject.Find("Wall Right")?.transform;
+        player.seaFloorBoundary = GameObject.Find("Sea Floor")?.transform;
+        player.waterSurfaceBoundary = GameObject.Find("Water Surface")?.transform;
         return player;
     }
 
@@ -455,6 +479,7 @@ public static class FishBalatroSceneBuilder
         fisherman.clawFisherman = CreateFishermanVariantEntity(FishFishermanType.Claw, "Claw Fisherman", sprites, root.transform);
         fisherman.electricFisherman = CreateFishermanVariantEntity(FishFishermanType.Electric, "Electric Fisherman", sprites, root.transform);
         fisherman.netFisherman = CreateFishermanVariantEntity(FishFishermanType.Net, "Net Fisherman", sprites, root.transform);
+        fisherman.bossFisherman = CreateFishermanVariantEntity(FishFishermanType.Boss, "Commercial Fishing Ship", sprites, root.transform);
         fisherman.SetVariant(FishFishermanType.Claw, 1);
         return fisherman;
     }
@@ -482,6 +507,17 @@ public static class FishBalatroSceneBuilder
         name.transform.localPosition = new Vector3(-0.85f, 1.48f, 0f);
         name.alignment = TextAlignmentOptions.Center;
 
+        if (type == FishFishermanType.Boss)
+        {
+            boatObject.transform.localScale = new Vector3(1.45f, 1.18f, 1f);
+            bodyObject.transform.localPosition = new Vector3(0.42f, 0.88f, 0f);
+            bodyObject.transform.localScale = new Vector3(1.08f, 1.08f, 1f);
+            anchor.localPosition = new Vector3(1.75f, 0.3f, 0f);
+            toolProp.localPosition = new Vector3(1.05f, 0.78f, 0f);
+            exclamation.transform.localPosition = new Vector3(0.62f, 1.72f, 0f);
+            name.transform.localPosition = new Vector3(-0.9f, 1.72f, 0f);
+        }
+
         return new FishermanController.FishermanVariantEntity
         {
             type = type,
@@ -503,6 +539,8 @@ public static class FishBalatroSceneBuilder
                 return new Color(1f, 0.58f, 0.22f);
             case FishFishermanType.Electric:
                 return new Color(1f, 0.92f, 0.28f);
+            case FishFishermanType.Boss:
+                return new Color(0.95f, 0.18f, 0.16f);
             default:
                 return new Color(0.35f, 0.9f, 1f);
         }
@@ -516,6 +554,8 @@ public static class FishBalatroSceneBuilder
                 return "Claw Tool Prop";
             case FishFishermanType.Electric:
                 return "Electric Tool Prop";
+            case FishFishermanType.Boss:
+                return "All Capture Tools Prop";
             default:
                 return "Net Tool Prop";
         }
@@ -634,18 +674,74 @@ public static class FishBalatroSceneBuilder
 
     private static BigFishAlly CreateBigFish(Dictionary<string, Sprite> sprites, FishGameManager gameManager)
     {
-        GameObject bigFishObject = CreateSpriteObject("Big Fish Ally", sprites["big_fish"], new Vector3(-6.65f, -3.15f, 0f), Vector3.one, 22);
+        GameObject bigFishObject = CreateSpriteObject("Big Fish Ally", sprites["big_fish"], new Vector3(-6.9f, -3.5f, 0f), new Vector3(0.25f, 0.25f, 1f), 22);
         CircleCollider2D collider = bigFishObject.AddComponent<CircleCollider2D>();
         collider.isTrigger = true;
         collider.radius = 1.05f;
 
         BigFishAlly ally = bigFishObject.AddComponent<BigFishAlly>();
         ally.gameManager = gameManager;
+        ally.bodyRenderer = bigFishObject.GetComponent<SpriteRenderer>();
+        ally.promptFontSize = 5f;
+        ally.promptBoxSize = new Vector2(8.5f, 3.2f);
+        ally.promptLocalPosition = new Vector3(0f, 1.25f, 0f);
 
-        TextMeshPro prompt = CreateWorldText("BigFishPrompt", "Need score\nfor big fish", new Vector3(0f, 1.25f, 0f), 0.85f, Color.white, 65, bigFishObject.transform);
-        prompt.transform.localPosition = new Vector3(0f, 1.25f, 0f);
+        TextMeshPro prompt = CreateWorldText("BigFishPrompt", "Need score\nfor big fish", ally.promptLocalPosition, ally.promptFontSize, Color.white, 65, bigFishObject.transform);
+        prompt.transform.localPosition = ally.promptLocalPosition;
+        prompt.rectTransform.sizeDelta = ally.promptBoxSize;
         ally.promptText = prompt;
         return ally;
+    }
+
+    [MenuItem("Game Jam/Fish Balatro/Add Big Fish Cave")]
+    public static void AddBigFishCave()
+    {
+        EnsureFolders();
+        Dictionary<string, Sprite> sprites = GenerateSprites();
+
+        if (SceneManager.GetActiveScene().path.Replace("\\", "/") != MainScenePath)
+        {
+            EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+        }
+
+        EnsureBigFishCaveInActiveScene(sprites);
+        EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+        EditorSceneManager.SaveScene(SceneManager.GetActiveScene());
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+        Debug.Log("Fish Balatro big fish cave entity added.");
+    }
+
+    private static void CreateBigFishCave(Dictionary<string, Sprite> sprites)
+    {
+        Transform cave = new GameObject("Big Fish Cave").transform;
+        cave.position = new Vector3(-6.55f, -3.45f, 0f);
+        cave.localScale = new Vector3(0.78f, 0.78f, 1f);
+
+        CreateSpriteObject("Cave Shadow", sprites["big_fish_cave_shadow"], new Vector3(0.08f, -0.06f, 0f), new Vector3(2.5f, 1.55f, 1f), 21, cave, new Color(0.04f, 0.08f, 0.12f, 0.92f));
+        CreateSpriteObject("Cave Front", sprites["big_fish_cave"], Vector3.zero, Vector3.one, 24, cave);
+    }
+
+    private static void EnsureBigFishCaveInActiveScene(Dictionary<string, Sprite> sprites)
+    {
+        GameObject existing = GameObject.Find("Big Fish Cave");
+        if (existing != null)
+        {
+            UnityEngine.Object.DestroyImmediate(existing);
+        }
+
+        CreateBigFishCave(sprites);
+
+        GameObject bigFish = GameObject.Find("Big Fish Ally");
+        if (bigFish != null)
+        {
+            bigFish.transform.position = new Vector3(-7.7f, -3.4896f, 0f);
+            SpriteRenderer renderer = bigFish.GetComponent<SpriteRenderer>();
+            if (renderer != null)
+            {
+                renderer.sortingOrder = 22;
+            }
+        }
     }
 
     private static FishUIController CreateUi(Dictionary<string, Sprite> sprites)
@@ -1143,6 +1239,34 @@ public static class FishBalatroSceneBuilder
                 float nx = (px - centerX) / (float)radiusX;
                 float ny = (py - centerY) / (float)radiusY;
                 if (nx * nx + ny * ny <= 1f)
+                {
+                    pixels[py * width + px] = color;
+                }
+            }
+        }
+    }
+
+    private static void StrokeEllipse(Color32[] pixels, int width, int height, int centerX, int centerY, int radiusX, int radiusY, Color32 color, int thickness)
+    {
+        for (int py = centerY - radiusY; py <= centerY + radiusY; py++)
+        {
+            for (int px = centerX - radiusX; px <= centerX + radiusX; px++)
+            {
+                if (px < 0 || px >= width || py < 0 || py >= height)
+                {
+                    continue;
+                }
+
+                float nx = (px - centerX) / (float)radiusX;
+                float ny = (py - centerY) / (float)radiusY;
+                float outer = nx * nx + ny * ny;
+                float innerRadiusX = Mathf.Max(1f, radiusX - thickness);
+                float innerRadiusY = Mathf.Max(1f, radiusY - thickness);
+                float innerNx = (px - centerX) / innerRadiusX;
+                float innerNy = (py - centerY) / innerRadiusY;
+                float inner = innerNx * innerNx + innerNy * innerNy;
+
+                if (outer <= 1f && inner >= 1f)
                 {
                     pixels[py * width + px] = color;
                 }

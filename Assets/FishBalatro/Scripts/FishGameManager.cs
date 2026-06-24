@@ -36,6 +36,8 @@ public class FishGameManager : MonoBehaviour
     // the big fish can scare them away.
     public int baseAttackCost = 240;
     public int attackCostStep = 140;
+    public int bossAttackCost = 900;
+    public int bossLevel = 4;
 
     [Header("Capture Tools")]
     public float netDodgedRecoverySeconds = 0.55f;
@@ -52,11 +54,12 @@ public class FishGameManager : MonoBehaviour
     private float stateMessageTimer;
     private string statusText = "Steal bait for score. Press E to attack the fisherman.";
     private string comboText = "";
+    private float bossCaptureProgress;
 
     public FishGameState State => state;
     public bool CanEatBait => state == FishGameState.Normal || state == FishGameState.FishingHazard;
     public bool CanCallBigFish => state == FishGameState.Normal && totalScore >= AttackCost;
-    public int AttackCost => baseAttackCost + (level - 1) * attackCostStep;
+    public int AttackCost => IsBossLevel ? bossAttackCost : baseAttackCost + (level - 1) * attackCostStep;
     public int TotalScore => totalScore;
     public int CurrentRunScore => currentRunScore;
     public int Multiplier => multiplier;
@@ -68,6 +71,9 @@ public class FishGameManager : MonoBehaviour
     public float CaptureToolProgress => state == FishGameState.FishingHazard ? GetActiveCaptureToolProgress() : 0f;
     public float NetSweepProgress => CaptureToolProgress;
     public bool IsGameOver => state == FishGameState.Caught;
+    public bool IsVictory => state == FishGameState.Victory;
+    public bool IsRunEnded => IsGameOver || IsVictory;
+    public bool IsBossLevel => level >= bossLevel;
 
     public string StatusText
     {
@@ -126,7 +132,7 @@ public class FishGameManager : MonoBehaviour
 
     private void Update()
     {
-        if (state == FishGameState.Caught)
+        if (state == FishGameState.Caught || state == FishGameState.Victory)
         {
             if (ReadRestartPressed())
             {
@@ -151,7 +157,9 @@ public class FishGameManager : MonoBehaviour
         }
         else if (state == FishGameState.Normal)
         {
-            statusText = "Eat bait for score. Press E to attack when you can pay the cost.";
+            statusText = IsBossLevel
+                ? "Commercial fishing ship! Survive all tools and call the big fish."
+                : "Eat bait for score. Press E to attack when you can pay the cost.";
         }
 
         if (ui != null)
@@ -238,6 +246,12 @@ public class FishGameManager : MonoBehaviour
             yield return new WaitForSeconds(0.6f);
         }
 
+        if (IsBossLevel)
+        {
+            WinGame(cost);
+            yield break;
+        }
+
         int nextLevel = level + 1;
 
         FishFishermanType nextType = GetFishermanTypeForLevel(nextLevel);
@@ -248,7 +262,9 @@ public class FishGameManager : MonoBehaviour
 
         level = nextLevel;
         ApplyFishermanVariant();
-        statusText = "Level " + level + ": " + CaptureToolName + " fisherman arrives.";
+        statusText = IsBossLevel
+            ? "Final Boss: commercial fishing ship arrives with every capture tool."
+            : "Level " + level + ": " + CaptureToolName + " fisherman arrives.";
         state = FishGameState.Normal;
 
         if (baitSpawner != null)
@@ -339,6 +355,7 @@ public class FishGameManager : MonoBehaviour
         // Alert full is not instant death. It starts the current fisherman's
         // readable capture tool pattern that the player can dodge.
         state = FishGameState.FishingHazard;
+        bossCaptureProgress = 0f;
         FishFishermanType type = CurrentFishermanType;
         string toolName = GetCaptureToolName(type);
         statusText = toolName.ToUpperInvariant() + " WARNING! DODGE!";
@@ -389,6 +406,9 @@ public class FishGameManager : MonoBehaviour
                 }
                 yield return electricWave.PlayWaves(player, level);
                 break;
+            case FishFishermanType.Boss:
+                yield return PlayBossCaptureTools();
+                break;
             default:
                 if (netSweep == null)
                 {
@@ -415,6 +435,7 @@ public class FishGameManager : MonoBehaviour
         // Dodging a tool keeps TotalScore. It only clears the current
         // risk/combo state so the player can start a fresh greed streak.
         ResetRunState();
+        bossCaptureProgress = 0f;
         statusText = "DODGED THE " + toolName.ToUpperInvariant() + "! Keep stealing or press E to attack.";
         comboText = "";
         StartCoroutine(ReturnToNormalAfter(FishGameState.Recovering, netDodgedRecoverySeconds));
@@ -455,6 +476,38 @@ public class FishGameManager : MonoBehaviour
         // instead of automatically recovering after touching a capture tool.
     }
 
+    private void WinGame(int finalAttackCost)
+    {
+        state = FishGameState.Victory;
+        statusText = "COMMERCIAL SHIP DEFEATED! You cleared the jam build.";
+        comboText = "Final score: " + totalScore + " | Final attack cost paid: " + finalAttackCost;
+        alert = 0f;
+        bossCaptureProgress = 0f;
+
+        if (baitSpawner != null)
+        {
+            baitSpawner.ClearBaits();
+        }
+
+        HideAllCaptureTools();
+
+        if (fisherman != null)
+        {
+            fisherman.SetNotice(false);
+            fisherman.SetReelWarning(false);
+        }
+
+        if (fishingLine != null)
+        {
+            fishingLine.SetLineVisible(false);
+        }
+
+        if (player != null)
+        {
+            ShowPopup(player.transform.position + Vector3.up * 0.85f, "CLEAR!", new Color(0.8f, 1f, 0.55f));
+        }
+    }
+
     private IEnumerator ReturnToNormalAfter(FishGameState temporaryState, float delay)
     {
         state = temporaryState;
@@ -491,6 +544,8 @@ public class FishGameManager : MonoBehaviour
                 return clawShot != null ? clawShot.Progress : 0f;
             case FishFishermanType.Electric:
                 return electricWave != null ? electricWave.Progress : 0f;
+            case FishFishermanType.Boss:
+                return bossCaptureProgress;
             default:
                 return netSweep != null ? netSweep.Progress : 0f;
         }
@@ -504,8 +559,69 @@ public class FishGameManager : MonoBehaviour
                 return clawShot != null && clawShot.CaughtPlayer;
             case FishFishermanType.Electric:
                 return electricWave != null && electricWave.CaughtPlayer;
+            case FishFishermanType.Boss:
+                return (clawShot != null && clawShot.CaughtPlayer)
+                    || (electricWave != null && electricWave.CaughtPlayer)
+                    || (netSweep != null && netSweep.CaughtPlayer);
             default:
                 return netSweep != null && netSweep.CaughtPlayer;
+        }
+    }
+
+    private IEnumerator PlayBossCaptureTools()
+    {
+        statusText = "BOSS WARNING: CLAW!";
+        yield return PlayCaptureToolSegment(FishFishermanType.Claw, 0f, 1f / 3f);
+        if (WasCaughtByTool(FishFishermanType.Boss))
+        {
+            yield break;
+        }
+
+        statusText = "BOSS WARNING: ELECTRIC WAVE!";
+        yield return PlayCaptureToolSegment(FishFishermanType.Electric, 1f / 3f, 2f / 3f);
+        if (WasCaughtByTool(FishFishermanType.Boss))
+        {
+            yield break;
+        }
+
+        statusText = "BOSS WARNING: NET!";
+        yield return PlayCaptureToolSegment(FishFishermanType.Net, 2f / 3f, 1f);
+        bossCaptureProgress = 1f;
+    }
+
+    private IEnumerator PlayCaptureToolSegment(FishFishermanType toolType, float progressStart, float progressEnd)
+    {
+        bossCaptureProgress = progressStart;
+        Coroutine progressRoutine = StartCoroutine(UpdateBossProgress(toolType, progressStart, progressEnd));
+        yield return PlayCaptureTool(toolType);
+        if (progressRoutine != null)
+        {
+            StopCoroutine(progressRoutine);
+        }
+
+        bossCaptureProgress = progressEnd;
+    }
+
+    private IEnumerator UpdateBossProgress(FishFishermanType toolType, float progressStart, float progressEnd)
+    {
+        while (state == FishGameState.FishingHazard)
+        {
+            float localProgress;
+            switch (toolType)
+            {
+                case FishFishermanType.Claw:
+                    localProgress = clawShot != null ? clawShot.Progress : 0f;
+                    break;
+                case FishFishermanType.Electric:
+                    localProgress = electricWave != null ? electricWave.Progress : 0f;
+                    break;
+                default:
+                    localProgress = netSweep != null ? netSweep.Progress : 0f;
+                    break;
+            }
+
+            bossCaptureProgress = Mathf.Lerp(progressStart, progressEnd, Mathf.Clamp01(localProgress));
+            yield return null;
         }
     }
 
@@ -527,8 +643,13 @@ public class FishGameManager : MonoBehaviour
         }
     }
 
-    private static FishFishermanType GetFishermanTypeForLevel(int targetLevel)
+    private FishFishermanType GetFishermanTypeForLevel(int targetLevel)
     {
+        if (targetLevel >= bossLevel)
+        {
+            return FishFishermanType.Boss;
+        }
+
         switch (Mathf.Abs(targetLevel - 1) % 3)
         {
             case 0:
@@ -548,6 +669,8 @@ public class FishGameManager : MonoBehaviour
                 return "Claw";
             case FishFishermanType.Electric:
                 return "Electric Wave";
+            case FishFishermanType.Boss:
+                return "Boss Tools";
             default:
                 return "Net";
         }

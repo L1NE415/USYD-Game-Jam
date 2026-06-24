@@ -16,7 +16,8 @@ public enum FishFishermanType
 {
     Net,
     Claw,
-    Electric
+    Electric,
+    Boss
 }
 
 // High-level game states owned by FishGameManager. Most scripts read this
@@ -27,5 +28,6 @@ public enum FishGameState
     FishingHazard,
     Recovering,
     Caught,
-    BigFishAttack
+    BigFishAttack,
+    Victory
 }

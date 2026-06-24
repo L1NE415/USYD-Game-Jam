@@ -103,7 +103,14 @@ public class FishUIController : MonoBehaviour
         SetText(controlsText, "<color=#ff5a50>ESCAPE!</color>\nWASD / ARROWS   SWIM\nSHIFT   BURST\nE   ATTACK " + game.AttackCost + "\nR   RESTART");
         SetText(comboText, game.ComboText);
         SetText(netSweepText, game.CaptureToolName + " " + Mathf.CeilToInt(game.CaptureToolProgress * 100f) + "%");
-        SetText(gameOverText, "CAUGHT IN THE NET\nFinal Score: " + game.TotalScore + "\nPress R to restart");
+        if (game.IsVictory)
+        {
+            SetText(gameOverText, "CONGRATULATIONS!\nCommercial fishing ship defeated\nFinal Score: " + game.TotalScore + "\nPress R to play again");
+        }
+        else
+        {
+            SetText(gameOverText, "CAUGHT BY " + game.CaptureToolName.ToUpperInvariant() + "\nFinal Score: " + game.TotalScore + "\nPress R to restart");
+        }
 
         if (alertFill != null)
         {
@@ -121,7 +128,7 @@ public class FishUIController : MonoBehaviour
 
         if (gameOverPanel != null)
         {
-            gameOverPanel.SetActive(game.IsGameOver);
+            gameOverPanel.SetActive(game.IsRunEnded);
         }
 
         if (netSweepFill != null)
@@ -956,7 +963,7 @@ public class FishUIController : MonoBehaviour
 
         TextMeshProUGUI text = textObject.AddComponent<TextMeshProUGUI>();
         text.font = statusText != null ? statusText.font : TMP_Settings.defaultFontAsset;
-        text.fontSize = 2f;
+        text.fontSize = 42f;
         text.color = Color.white;
         text.alignment = TextAlignmentOptions.Center;
         text.textWrappingMode = TextWrappingModes.Normal;
