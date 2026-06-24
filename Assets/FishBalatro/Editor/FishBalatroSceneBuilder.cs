@@ -18,6 +18,7 @@ public static class FishBalatroSceneBuilder
     private const string PrefabPath = Root + "/Prefabs";
     private const string MainScenePath = "Assets/Scenes/Main.unity";
     private const float PixelsPerUnit = 16f;
+    private const float UiPixelsPerUnit = 100f;
 
     private static readonly Color32 Clear = new Color32(0, 0, 0, 0);
 
@@ -109,6 +110,41 @@ public static class FishBalatroSceneBuilder
         {
             Rect(pixels, 16, 16, 0, 0, 16, 16, new Color32(255, 255, 255, 255));
         });
+
+        sprites["ui_score_panel"] = SaveUiPanelSprite("ui_score_panel", 142, 78, pixels =>
+        {
+            DrawHudPanel(pixels, 142, 78, new Color32(96, 173, 222, 255));
+        });
+
+        sprites["ui_multiplier_panel"] = SaveUiPanelSprite("ui_multiplier_panel", 142, 78, pixels =>
+        {
+            DrawHudPanel(pixels, 142, 78, new Color32(255, 191, 48, 255));
+        });
+
+        sprites["ui_alert_panel"] = SaveUiPanelSprite("ui_alert_panel", 420, 60, pixels =>
+        {
+            DrawAlertPanel(pixels, 420, 60);
+        });
+
+        sprites["ui_controls_panel"] = SaveUiPanelSprite("ui_controls_panel", 260, 118, pixels =>
+        {
+            DrawHudPanel(pixels, 260, 118, new Color32(255, 86, 75, 255));
+        });
+
+        sprites["ui_keycap"] = SaveUiPanelSprite("ui_keycap", 62, 28, pixels =>
+        {
+            Rect(pixels, 62, 28, 0, 0, 61, 27, new Color32(30, 42, 58, 235));
+            Rect(pixels, 62, 28, 5, 5, 51, 17, new Color32(51, 65, 82, 235));
+            StrokeRect(pixels, 62, 28, 1, 1, 58, 24, new Color32(9, 15, 24, 255), 3);
+            StrokeRect(pixels, 62, 28, 4, 4, 52, 18, new Color32(98, 126, 148, 255), 2);
+        });
+
+        sprites["ui_alert_segment"] = SaveSprite("ui_alert_segment", 26, 24, pixels =>
+        {
+            Rect(pixels, 26, 24, 1, 1, 24, 22, new Color32(92, 26, 34, 255));
+            Rect(pixels, 26, 24, 3, 4, 20, 17, new Color32(188, 45, 51, 255));
+            Rect(pixels, 26, 24, 4, 5, 18, 5, new Color32(255, 84, 74, 255));
+        }, UiPixelsPerUnit, new Vector4(2f, 2f, 2f, 2f));
 
         sprites["water_panel"] = SaveSprite("water_panel", 32, 32, pixels =>
         {
@@ -369,9 +405,9 @@ public static class FishBalatroSceneBuilder
         GameObject surface = CreateSpriteObject("Water Surface", sprites["ui_square"], new Vector3(0f, 3.6f, 0f), new Vector3(17.5f, 0.08f, 1f), 2);
         surface.GetComponent<SpriteRenderer>().color = new Color(0.48f, 0.9f, 1f, 0.8f);
 
-        CreateBoundary("Wall Left", new Vector2(-8.7f, -0.35f), new Vector2(0.4f, 8.2f));
-        CreateBoundary("Wall Right", new Vector2(8.7f, -0.35f), new Vector2(0.4f, 8.2f));
-        CreateBoundary("Sea Floor", new Vector2(0f, -4.35f), new Vector2(18f, 0.4f));
+        CreateBoundary("Wall Left", new Vector2(-8.94f, -0.35f), new Vector2(0.4f, 8.2f));
+        CreateBoundary("Wall Right", new Vector2(8.94f, -0.35f), new Vector2(0.4f, 8.2f));
+        CreateBoundary("Sea Floor", new Vector2(0f, -5.1f), new Vector2(18f, 0.2f));
 
         CreateWorldText("Tutorial", "Steal bait for score. Press E to attack the fisherman.", new Vector3(0f, -4.05f, 0f), 1.05f, new Color(0.78f, 0.96f, 1f), 60, null);
     }
@@ -580,6 +616,13 @@ public static class FishBalatroSceneBuilder
 
         FishUIController ui = canvasObject.AddComponent<FishUIController>();
         Sprite uiSprite = sprites["ui_square"];
+        ui.scorePanelSprite = sprites["ui_score_panel"];
+        ui.multiplierPanelSprite = sprites["ui_multiplier_panel"];
+        ui.alertPanelSprite = sprites["ui_alert_panel"];
+        ui.controlsPanelSprite = sprites["ui_controls_panel"];
+        ui.keycapSprite = sprites["ui_keycap"];
+        ui.alertSegmentSprite = sprites["ui_alert_segment"];
+        CreateWorldControlsHint(sprites["ui_controls_panel"], ui, font);
         RectTransform scoreRoot = CreateUiContainer(canvasObject.transform, "Score UI");
         RectTransform alertRoot = CreateUiContainer(canvasObject.transform, "Alert UI");
 
@@ -685,6 +728,23 @@ public static class FishBalatroSceneBuilder
         fill.fillMethod = Image.FillMethod.Horizontal;
         fill.fillOrigin = 0;
         fill.fillAmount = 0f;
+    }
+
+    private static void CreateWorldControlsHint(Sprite panelSprite, FishUIController ui, TMP_FontAsset font)
+    {
+        GameObject root = new GameObject("Controls Hint");
+        root.transform.position = new Vector3(6.35f, -3.72f, 0f);
+
+        GameObject panel = CreateSpriteObject("Panel", panelSprite, new Vector3(0.96f, -0.65f, 0f), new Vector3(1.25f, 1.15f, 1f), 6, root.transform, new Color(1f, 1f, 1f, 0.56f));
+
+        TextMeshPro text = CreateWorldText("Text", "<color=#ff5a50>ESCAPE!</color>\nWASD / ARROWS   SWIM\nSHIFT   BURST\nE   ATTACK\nR   RESTART", new Vector3(0.98f, -0.65f, 0f), 1.8f, Color.white, 7, root.transform);
+        text.font = font;
+        text.richText = true;
+        text.rectTransform.sizeDelta = new Vector2(3.2f, 1.2f);
+
+        ui.controlsPanel = root;
+        ui.controlsText = text;
+        ui.controlsWorldPanelRenderer = panel.GetComponent<SpriteRenderer>();
     }
 
     private static GameObject CreateSpriteObject(string name, Sprite sprite, Vector3 position, Vector3 scale, int sortingOrder, Transform parent = null, Color? tint = null)
@@ -837,7 +897,17 @@ public static class FishBalatroSceneBuilder
         }
     }
 
+    private static Sprite SaveUiPanelSprite(string name, int width, int height, Action<Color32[]> draw)
+    {
+        return SaveSprite(name, width, height, draw, UiPixelsPerUnit, new Vector4(8f, 8f, 8f, 8f));
+    }
+
     private static Sprite SaveSprite(string name, int width, int height, Action<Color32[]> draw)
+    {
+        return SaveSprite(name, width, height, draw, PixelsPerUnit, Vector4.zero);
+    }
+
+    private static Sprite SaveSprite(string name, int width, int height, Action<Color32[]> draw, float pixelsPerUnit, Vector4 spriteBorder)
     {
         string path = ArtPath + "/" + name + ".png";
         if (File.Exists(path))
@@ -848,7 +918,8 @@ public static class FishBalatroSceneBuilder
             {
                 existingImporter.textureType = TextureImporterType.Sprite;
                 existingImporter.spriteImportMode = SpriteImportMode.Single;
-                existingImporter.spritePixelsPerUnit = PixelsPerUnit;
+                existingImporter.spritePixelsPerUnit = pixelsPerUnit;
+                existingImporter.spriteBorder = spriteBorder;
                 existingImporter.filterMode = FilterMode.Point;
                 existingImporter.textureCompression = TextureImporterCompression.Uncompressed;
                 existingImporter.mipmapEnabled = false;
@@ -882,7 +953,8 @@ public static class FishBalatroSceneBuilder
         TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(path);
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Single;
-        importer.spritePixelsPerUnit = PixelsPerUnit;
+        importer.spritePixelsPerUnit = pixelsPerUnit;
+        importer.spriteBorder = spriteBorder;
         importer.filterMode = FilterMode.Point;
         importer.textureCompression = TextureImporterCompression.Uncompressed;
         importer.mipmapEnabled = false;
@@ -916,6 +988,33 @@ public static class FishBalatroSceneBuilder
         }
 
         return null;
+    }
+
+    private static void DrawHudPanel(Color32[] pixels, int width, int height, Color32 accent)
+    {
+        Rect(pixels, width, height, 5, 5, width - 5, height - 5, new Color32(4, 8, 13, 150));
+        Rect(pixels, width, height, 0, 0, width - 7, height - 7, new Color32(13, 23, 34, 238));
+        Rect(pixels, width, height, 7, 7, width - 21, height - 21, new Color32(22, 38, 54, 220));
+        StrokeRect(pixels, width, height, 1, 1, width - 9, height - 9, new Color32(9, 15, 24, 255), 4);
+        StrokeRect(pixels, width, height, 5, 5, width - 17, height - 17, new Color32(49, 75, 96, 255), 3);
+        Line(pixels, width, height, 12, 9, width - 28, 9, accent);
+    }
+
+    private static void DrawAlertPanel(Color32[] pixels, int width, int height)
+    {
+        Rect(pixels, width, height, 5, 5, width - 5, height - 5, new Color32(4, 8, 13, 150));
+        Rect(pixels, width, height, 0, 0, width - 7, height - 7, new Color32(13, 23, 34, 238));
+        Rect(pixels, width, height, 7, 7, width - 21, height - 21, new Color32(22, 38, 54, 220));
+        StrokeRect(pixels, width, height, 1, 1, width - 9, height - 9, new Color32(9, 15, 24, 255), 4);
+        StrokeRect(pixels, width, height, 5, 5, width - 17, height - 17, new Color32(49, 75, 96, 255), 3);
+    }
+
+    private static void StrokeRect(Color32[] pixels, int width, int height, int x, int y, int rectWidth, int rectHeight, Color32 color, int thickness)
+    {
+        Rect(pixels, width, height, x, y, rectWidth, thickness, color);
+        Rect(pixels, width, height, x, y + rectHeight - thickness, rectWidth, thickness, color);
+        Rect(pixels, width, height, x, y, thickness, rectHeight, color);
+        Rect(pixels, width, height, x + rectWidth - thickness, y, thickness, rectHeight, color);
     }
 
     private static void Rect(Color32[] pixels, int width, int height, int x, int y, int rectWidth, int rectHeight, Color32 color)

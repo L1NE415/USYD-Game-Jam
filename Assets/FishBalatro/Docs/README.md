@@ -70,7 +70,9 @@ or use the menu shortcut above.
 
 - Score-related UI is grouped under `Fish UI/Score UI`.
 - Alert-related UI is grouped under `Fish UI/Alert UI`.
-- Existing text and bars still drive the prototype UI, but these containers give UI artists stable objects for animation, replacement sprites, and layout work.
+- Controls use a world-space `Controls Hint` object near the lower-right of the arena. It sits at a low sorting order so player fish, bait, and capture tools draw over it.
+- The HUD uses replaceable pixel UI sprites in `Assets/FishBalatro/Art/Generated`: `ui_score_panel.png`, `ui_multiplier_panel.png`, `ui_alert_panel.png`, `ui_alert_segment.png`, `ui_controls_panel.png`, and `ui_keycap.png`.
+- Existing text and bars still drive live values, but these containers and sprites give UI artists stable objects for animation, replacement sprites, and layout work.
 
 ## Big Fish Mechanic
 
