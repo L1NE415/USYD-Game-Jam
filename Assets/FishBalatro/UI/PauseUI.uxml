@@ -2,9 +2,9 @@
     <Style src="project://database/Assets/FishBalatro/UI/PauseUI.uss?fileID=7433441132597879392&amp;guid=7acb754d949f0cf45aa7a49a1f7470bf&amp;type=3#PauseUI"/>
     <ui:VisualElement name="pause-root" picking-mode="Position" class="pause-root" style="flex-grow: 1;">
         <ui:VisualElement name="pause-panel" picking-mode="Position" enabled="true" class="pause-panel" style="flex-grow: 1; background-color: rgba(0, 27, 46, 0.447); padding-top: 24px; padding-right: 24px; padding-bottom: 24px; padding-left: 24px; border-top-width: 2px; border-right-width: 2px; border-bottom-width: 2px; border-left-width: 2px; border-left-color: rgba(255, 255, 255, 0); border-right-color: rgba(255, 255, 255, 0); border-top-color: rgba(255, 255, 255, 0); border-bottom-color: rgba(255, 255, 255, 0); align-items: center; justify-content: center; width: 1071px; background-image: none;">
-            <ui:Label text="Game Paused" name="pause-title" picking-mode="Position" class="pause-title" style="font-size: 30px; color: rgb(255, 255, 255); -unity-font-style: bold; -unity-text-align: middle-center; top: auto; bottom: 30px;"/>
-            <ui:Button text="Resume Game" name="resume-button" selectable="false" focusable="false" class="pause-button"/>
-            <ui:Button text="Quit Game" name="quit-button" selectable="false" focusable="false" class="pause-button"/>
+            <ui:Label text="Game Paused" name="pause-title" picking-mode="Position" class="pause-title" style="font-size: 30px; color: rgb(255, 220, 80); -unity-font-style: bold; -unity-text-align: middle-center; top: auto; bottom: 30px; -unity-font-definition: url(&quot;project://database/Assets/FishBalatro/Font/Malam%20Poek.otf?fileID=12800000&amp;guid=d18ffa7593a13864f802c41f0f8e3a3d&amp;type=3#Malam Poek&quot;);"/>
+            <ui:Button text="Resume Game" name="resume-button" selectable="false" focusable="false" class="pause-button" style="-unity-font-definition: url(&quot;project://database/Assets/FishBalatro/Font/Malam%20Poek.otf?fileID=12800000&amp;guid=d18ffa7593a13864f802c41f0f8e3a3d&amp;type=3#Malam Poek&quot;);"/>
+            <ui:Button text="Quit Game" name="quit-button" selectable="false" focusable="false" class="pause-button" style="-unity-font-definition: url(&quot;project://database/Assets/FishBalatro/Font/Malam%20Poek.otf?fileID=12800000&amp;guid=d18ffa7593a13864f802c41f0f8e3a3d&amp;type=3#Malam Poek&quot;);"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
