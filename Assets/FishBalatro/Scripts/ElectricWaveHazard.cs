@@ -17,6 +17,7 @@ public class ElectricWaveHazard : MonoBehaviour
     public int sortingOrder = 47;
 
     private readonly List<LineRenderer> waveLines = new List<LineRenderer>();
+    private bool isPlaying;
 
     public bool CaughtPlayer { get; private set; }
     public float Progress { get; private set; }
@@ -29,16 +30,22 @@ public class ElectricWaveHazard : MonoBehaviour
 
     private void Awake()
     {
-        Hide();
+        CollectExistingWaveLines();
+        if (!isPlaying)
+        {
+            Hide();
+        }
     }
 
     public IEnumerator PlayWaves(FishPlayerController player, int level)
     {
+        isPlaying = true;
         gameObject.SetActive(true);
         CaughtPlayer = false;
         Progress = 0f;
 
         int waveCount = Mathf.Max(1, Mathf.FloorToInt((topY - bottomY) / waveSpacing) + 1);
+        CollectExistingWaveLines();
         EnsureLineCount(waveCount);
         HideLines();
 
@@ -85,6 +92,7 @@ public class ElectricWaveHazard : MonoBehaviour
 
     public void Hide()
     {
+        isPlaying = false;
         Progress = 0f;
         HideLines();
         gameObject.SetActive(false);
@@ -112,6 +120,8 @@ public class ElectricWaveHazard : MonoBehaviour
 
     private void EnsureLineCount(int count)
     {
+        CollectExistingWaveLines();
+
         while (waveLines.Count < count)
         {
             GameObject lineObject = new GameObject("Electric Wave " + (waveLines.Count + 1));
@@ -126,6 +136,43 @@ public class ElectricWaveHazard : MonoBehaviour
             if (shader != null)
             {
                 line.sharedMaterial = new Material(shader);
+            }
+
+            waveLines.Add(line);
+        }
+    }
+
+    private void CollectExistingWaveLines()
+    {
+        if (waveLines.Count > 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (!child.name.StartsWith("Electric Wave"))
+            {
+                continue;
+            }
+
+            LineRenderer line = child.GetComponent<LineRenderer>();
+            if (line == null)
+            {
+                line = child.gameObject.AddComponent<LineRenderer>();
+            }
+
+            line.useWorldSpace = true;
+            line.sortingOrder = sortingOrder;
+            line.numCapVertices = 3;
+            if (line.sharedMaterial == null)
+            {
+                Shader shader = Shader.Find("Sprites/Default");
+                if (shader != null)
+                {
+                    line.sharedMaterial = new Material(shader);
+                }
             }
 
             waveLines.Add(line);

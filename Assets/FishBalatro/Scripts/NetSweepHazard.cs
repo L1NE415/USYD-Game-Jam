@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 // Large pendulum-style net hazard used when Alert reaches 100.
-// The visual is built from LineRenderers at runtime so the prototype does not
-// need a separate net sprite while the rules are still changing.
+// The hazard is driven by a normal SpriteRenderer so artists can replace
+// net.png or add an Animator to the "Net Sprite" child without touching code.
 public class NetSweepHazard : MonoBehaviour
 {
     public Vector3 pivotPosition = new Vector3(0f, 3.7f, 0f);
@@ -15,10 +15,14 @@ public class NetSweepHazard : MonoBehaviour
     public float sweepSeconds = 3.1f;
     public float recoverSeconds = 0.25f;
     public int sortingOrder = 45;
+    public Sprite netSprite;
+    public SpriteRenderer netRenderer;
+    public bool useLineFallback = true;
 
     private readonly List<LineRenderer> netLines = new List<LineRenderer>();
     private Transform netTransform;
     private BoxCollider2D hitbox;
+    private bool isPlaying;
 
     public bool CaughtPlayer { get; private set; }
     public float Progress { get; private set; }
@@ -32,11 +36,15 @@ public class NetSweepHazard : MonoBehaviour
     private void Awake()
     {
         BuildVisualIfNeeded();
-        Hide();
+        if (!isPlaying)
+        {
+            Hide();
+        }
     }
 
     public IEnumerator PlaySweep(FishPlayerController player, int level)
     {
+        isPlaying = true;
         BuildVisualIfNeeded();
 
         gameObject.SetActive(true);
@@ -101,6 +109,7 @@ public class NetSweepHazard : MonoBehaviour
 
     public void Hide()
     {
+        isPlaying = false;
         Progress = 0f;
         if (hitbox != null)
         {
@@ -119,17 +128,63 @@ public class NetSweepHazard : MonoBehaviour
 
         transform.position = pivotPosition;
 
-        GameObject netObject = new GameObject("Sweeping Net");
-        netObject.transform.SetParent(transform, false);
-        netObject.transform.localPosition = netLocalOffset;
-        netTransform = netObject.transform;
+        if (netRenderer != null)
+        {
+            netTransform = netRenderer.transform;
+        }
 
-        hitbox = netObject.AddComponent<BoxCollider2D>();
+        if (netTransform == null)
+        {
+            Transform child = transform.Find("Net Sprite");
+            if (child == null)
+            {
+                child = transform.Find("Sweeping Net");
+            }
+
+            if (child != null)
+            {
+                netTransform = child;
+                netRenderer = child.GetComponent<SpriteRenderer>();
+            }
+        }
+
+        if (netTransform == null)
+        {
+            GameObject netObject = new GameObject("Net Sprite");
+            netObject.transform.SetParent(transform, false);
+            netObject.transform.localPosition = netLocalOffset;
+            netTransform = netObject.transform;
+        }
+
+        if (netRenderer == null && netSprite != null)
+        {
+            netRenderer = netTransform.gameObject.AddComponent<SpriteRenderer>();
+        }
+
+        if (netRenderer != null)
+        {
+            if (netRenderer.sprite == null)
+            {
+                netRenderer.sprite = netSprite;
+            }
+
+            netRenderer.sortingOrder = sortingOrder;
+        }
+
+        hitbox = netTransform.GetComponent<BoxCollider2D>();
+        if (hitbox == null)
+        {
+            hitbox = netTransform.gameObject.AddComponent<BoxCollider2D>();
+        }
+
         hitbox.isTrigger = true;
         hitbox.size = netSize;
         hitbox.enabled = false;
 
-        BuildNetLines();
+        if ((netRenderer == null || netRenderer.sprite == null) && useLineFallback)
+        {
+            BuildNetLines();
+        }
     }
 
     private void BuildNetLines()
@@ -186,6 +241,11 @@ public class NetSweepHazard : MonoBehaviour
 
     private void SetNetColor(Color color)
     {
+        if (netRenderer != null)
+        {
+            netRenderer.color = color;
+        }
+
         for (int i = 0; i < netLines.Count; i++)
         {
             netLines[i].startColor = color;

@@ -41,9 +41,10 @@ public static class FishBalatroSceneBuilder
         FishermanController fisherman = CreateFisherman(sprites);
         FishPlayerController player = CreatePlayer(sprites);
         FishingLineView line = CreateFishingLine(gameManager, fisherman, player);
-        NetSweepHazard netSweep = CreateNetSweepHazard();
-        ClawShotHazard clawShot = CreateClawShotHazard(sprites["claw"]);
-        ElectricWaveHazard electricWave = CreateElectricWaveHazard();
+        Transform captureTools = new GameObject("Capture Tools").transform;
+        NetSweepHazard netSweep = CreateNetSweepHazard(sprites["net"], captureTools);
+        ClawShotHazard clawShot = CreateClawShotHazard(sprites["claw"], captureTools);
+        ElectricWaveHazard electricWave = CreateElectricWaveHazard(captureTools);
         BaitSpawner spawner = CreateBaitSpawner(gameManager, player, baitPrefabs);
         BigFishAlly bigFish = CreateBigFish(sprites, gameManager);
         FishUIController ui = CreateUi(sprites);
@@ -130,7 +131,7 @@ public static class FishBalatroSceneBuilder
             Rect(pixels, 32, 18, 11, 8, 2, 2, new Color32(180, 79, 50, 255));
         });
 
-        sprites["big_fish"] = SaveSprite("big_fish", 72, 36, pixels =>
+        sprites["big_fish"] = LoadGeneratedSprite("Fish_Large_1.png.png") ?? SaveSprite("big_fish", 72, 36, pixels =>
         {
             Triangle(pixels, 72, 36, new Vector2Int(3, 18), new Vector2Int(22, 32), new Vector2Int(22, 4), new Color32(31, 119, 130, 255));
             Ellipse(pixels, 72, 36, 41, 18, 26, 13, new Color32(43, 166, 170, 255));
@@ -224,6 +225,32 @@ public static class FishBalatroSceneBuilder
             Line(pixels, 24, 24, 19, 2, 20, 8, new Color32(224, 230, 235, 255));
             Line(pixels, 24, 24, 9, 6, 15, 6, new Color32(164, 176, 188, 255));
             Rect(pixels, 24, 24, 11, 18, 3, 3, new Color32(138, 148, 158, 255));
+        });
+
+        sprites["net"] = SaveSprite("net", 128, 72, pixels =>
+        {
+            Color32 rope = new Color32(158, 236, 248, 230);
+            Color32 edge = new Color32(214, 250, 255, 245);
+            int width = 128;
+            int height = 72;
+
+            Line(pixels, width, height, 2, 2, 125, 2, edge);
+            Line(pixels, width, height, 2, 69, 125, 69, edge);
+            Line(pixels, width, height, 2, 2, 2, 69, edge);
+            Line(pixels, width, height, 125, 2, 125, 69, edge);
+
+            for (int x = 20; x <= 108; x += 22)
+            {
+                Line(pixels, width, height, x, 3, x, 68, rope);
+            }
+
+            for (int y = 18; y <= 54; y += 18)
+            {
+                Line(pixels, width, height, 3, y, 124, y, rope);
+            }
+
+            Line(pixels, width, height, 2, 2, 125, 69, rope);
+            Line(pixels, width, height, 125, 2, 2, 69, rope);
         });
 
         sprites["worm"] = SaveSprite("bait_worm", 20, 16, pixels =>
@@ -448,9 +475,10 @@ public static class FishBalatroSceneBuilder
         return spawner;
     }
 
-    private static NetSweepHazard CreateNetSweepHazard()
+    private static NetSweepHazard CreateNetSweepHazard(Sprite netSprite, Transform parent)
     {
         GameObject netObject = new GameObject("Net Sweep Pivot");
+        netObject.transform.SetParent(parent, false);
         NetSweepHazard netSweep = netObject.AddComponent<NetSweepHazard>();
         netSweep.pivotPosition = new Vector3(0f, 3.7f, 0f);
         netSweep.netSize = new Vector2(8f, 4.5f);
@@ -459,13 +487,23 @@ public static class FishBalatroSceneBuilder
         netSweep.warningSeconds = 0.7f;
         netSweep.sweepSeconds = 3.1f;
         netSweep.recoverSeconds = 0.25f;
+        netSweep.netSprite = netSprite;
+
+        GameObject netSpriteObject = CreateSpriteObject("Net Sprite", netSprite, netSweep.netLocalOffset, Vector3.one, netSweep.sortingOrder, netObject.transform, new Color(0.62f, 0.95f, 1f, 0.86f));
+        BoxCollider2D collider = netSpriteObject.AddComponent<BoxCollider2D>();
+        collider.isTrigger = true;
+        collider.size = netSweep.netSize;
+        collider.enabled = false;
+        netSweep.netRenderer = netSpriteObject.GetComponent<SpriteRenderer>();
+
         netObject.SetActive(false);
         return netSweep;
     }
 
-    private static ClawShotHazard CreateClawShotHazard(Sprite clawSprite)
+    private static ClawShotHazard CreateClawShotHazard(Sprite clawSprite, Transform parent)
     {
         GameObject clawObject = new GameObject("Claw Shot Hazard");
+        clawObject.transform.SetParent(parent, false);
         ClawShotHazard clawShot = clawObject.AddComponent<ClawShotHazard>();
         clawShot.clawSprite = clawSprite;
         clawShot.pivotPosition = new Vector3(0f, 3.45f, 0f);
@@ -473,13 +511,21 @@ public static class FishBalatroSceneBuilder
         clawShot.warningSeconds = 0.45f;
         clawShot.shotSeconds = 0.75f;
         clawShot.betweenShotsSeconds = 0.18f;
+
+        LineRenderer path = CreateLineRenderer("Claw Path", clawObject.transform, clawShot.sortingOrder);
+        path.positionCount = 0;
+
+        GameObject clawHead = CreateSpriteObject("Claw Head", clawSprite, Vector3.zero, Vector3.one, clawShot.sortingOrder + 1, clawObject.transform);
+        clawHead.GetComponent<SpriteRenderer>().enabled = false;
+
         clawObject.SetActive(false);
         return clawShot;
     }
 
-    private static ElectricWaveHazard CreateElectricWaveHazard()
+    private static ElectricWaveHazard CreateElectricWaveHazard(Transform parent)
     {
         GameObject electricObject = new GameObject("Electric Wave Hazard");
+        electricObject.transform.SetParent(parent, false);
         ElectricWaveHazard electricWave = electricObject.AddComponent<ElectricWaveHazard>();
         electricWave.xMin = -8f;
         electricWave.xMax = 8f;
@@ -489,6 +535,13 @@ public static class FishBalatroSceneBuilder
         electricWave.warningSeconds = 0.35f;
         electricWave.activeSeconds = 0.35f;
         electricWave.afterWaveSeconds = 0.18f;
+
+        int waveCount = Mathf.Max(1, Mathf.FloorToInt((electricWave.topY - electricWave.bottomY) / electricWave.waveSpacing) + 1);
+        for (int i = 0; i < waveCount; i++)
+        {
+            CreateLineRenderer("Electric Wave " + (i + 1), electricObject.transform, electricWave.sortingOrder);
+        }
+
         electricObject.SetActive(false);
         return electricWave;
     }
@@ -527,14 +580,16 @@ public static class FishBalatroSceneBuilder
 
         FishUIController ui = canvasObject.AddComponent<FishUIController>();
         Sprite uiSprite = sprites["ui_square"];
+        RectTransform scoreRoot = CreateUiContainer(canvasObject.transform, "Score UI");
+        RectTransform alertRoot = CreateUiContainer(canvasObject.transform, "Alert UI");
 
         ui.levelText = CreateUiText(canvasObject.transform, "LevelText", "Level 1", new Vector2(0f, 1f), new Vector2(24f, -22f), new Vector2(280f, 46f), 30f, Color.white, TextAlignmentOptions.Left, font);
-        ui.totalScoreText = CreateUiText(canvasObject.transform, "TotalScoreText", "Total: 0", new Vector2(0f, 1f), new Vector2(24f, -70f), new Vector2(320f, 46f), 30f, Color.white, TextAlignmentOptions.Left, font);
-        ui.currentRunText = CreateUiText(canvasObject.transform, "CurrentRunText", "At Risk: 0", new Vector2(0f, 1f), new Vector2(24f, -118f), new Vector2(320f, 46f), 30f, new Color(0.75f, 1f, 0.82f), TextAlignmentOptions.Left, font);
-        ui.multiplierText = CreateUiText(canvasObject.transform, "MultiplierText", "Mult x1  Next x1", new Vector2(0f, 1f), new Vector2(24f, -166f), new Vector2(460f, 46f), 28f, new Color(1f, 0.9f, 0.62f), TextAlignmentOptions.Left, font);
+        ui.totalScoreText = CreateUiText(scoreRoot, "TotalScoreText", "Total: 0", new Vector2(0f, 1f), new Vector2(24f, -70f), new Vector2(320f, 46f), 30f, Color.white, TextAlignmentOptions.Left, font);
+        ui.currentRunText = CreateUiText(scoreRoot, "CurrentRunText", "At Risk: 0", new Vector2(0f, 1f), new Vector2(24f, -118f), new Vector2(320f, 46f), 30f, new Color(0.75f, 1f, 0.82f), TextAlignmentOptions.Left, font);
+        ui.multiplierText = CreateUiText(scoreRoot, "MultiplierText", "Mult x1  Next x1", new Vector2(0f, 1f), new Vector2(24f, -166f), new Vector2(460f, 46f), 28f, new Color(1f, 0.9f, 0.62f), TextAlignmentOptions.Left, font);
 
-        CreateBar(canvasObject.transform, "AlertBar", new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(540f, 34f), uiSprite, new Color(0.18f, 0.08f, 0.08f, 0.86f), new Color(1f, 0.62f, 0.18f), out ui.alertFill);
-        ui.alertText = CreateUiText(canvasObject.transform, "AlertText", "Alert 0%", new Vector2(0.5f, 1f), new Vector2(0f, -78f), new Vector2(360f, 34f), 26f, Color.white, TextAlignmentOptions.Center, font);
+        CreateBar(alertRoot, "AlertBar", new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(540f, 34f), uiSprite, new Color(0.18f, 0.08f, 0.08f, 0.86f), new Color(1f, 0.62f, 0.18f), out ui.alertFill);
+        ui.alertText = CreateUiText(alertRoot, "AlertText", "Alert 0%", new Vector2(0.5f, 1f), new Vector2(0f, -78f), new Vector2(360f, 34f), 26f, Color.white, TextAlignmentOptions.Center, font);
 
         ui.attackCostText = CreateUiText(canvasObject.transform, "AttackCostText", "Press E Attack: 240", new Vector2(1f, 1f), new Vector2(-24f, -34f), new Vector2(430f, 46f), 28f, new Color(0.72f, 1f, 0.9f), TextAlignmentOptions.Right, font);
         ui.comboText = CreateUiText(canvasObject.transform, "ComboText", "", new Vector2(0.5f, 0f), new Vector2(0f, 112f), new Vector2(980f, 44f), 28f, new Color(1f, 0.92f, 0.56f), TextAlignmentOptions.Center, font);
@@ -560,6 +615,20 @@ public static class FishBalatroSceneBuilder
         }
 
         return ui;
+    }
+
+    private static RectTransform CreateUiContainer(Transform parent, string name)
+    {
+        GameObject container = new GameObject(name, typeof(RectTransform));
+        container.transform.SetParent(parent, false);
+
+        RectTransform rect = container.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.sizeDelta = Vector2.zero;
+        return rect;
     }
 
     private static TextMeshProUGUI CreateUiText(Transform parent, string name, string value, Vector2 anchor, Vector2 anchoredPosition, Vector2 size, float fontSize, Color color, TextAlignmentOptions alignment, TMP_FontAsset font)
@@ -635,6 +704,26 @@ public static class FishBalatroSceneBuilder
         renderer.sortingOrder = sortingOrder;
         AssignSpriteMaterial(renderer);
         return obj;
+    }
+
+    private static LineRenderer CreateLineRenderer(string name, Transform parent, int sortingOrder)
+    {
+        GameObject lineObject = new GameObject(name);
+        lineObject.transform.SetParent(parent, false);
+
+        LineRenderer line = lineObject.AddComponent<LineRenderer>();
+        line.useWorldSpace = true;
+        line.positionCount = 0;
+        line.numCapVertices = 3;
+        line.sortingOrder = sortingOrder;
+
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader != null)
+        {
+            line.sharedMaterial = new Material(shader);
+        }
+
+        return line;
     }
 
     private static Color GetBaitTint(FishBaitType type)
@@ -800,6 +889,33 @@ public static class FishBalatroSceneBuilder
         importer.SaveAndReimport();
 
         return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+    }
+
+    private static Sprite LoadGeneratedSprite(string fileName)
+    {
+        string path = ArtPath + "/" + fileName;
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+        Sprite sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        if (sprite != null)
+        {
+            return sprite;
+        }
+
+        UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
+        for (int i = 0; i < assets.Length; i++)
+        {
+            if (assets[i] is Sprite nestedSprite)
+            {
+                return nestedSprite;
+            }
+        }
+
+        return null;
     }
 
     private static void Rect(Color32[] pixels, int width, int height, int x, int y, int rectWidth, int rectHeight, Color32 color)

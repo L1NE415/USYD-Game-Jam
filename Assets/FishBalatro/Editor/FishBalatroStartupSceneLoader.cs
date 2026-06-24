@@ -40,6 +40,8 @@ public static class FishBalatroStartupSceneLoader
         changed |= ApplySprite("Boat", "boat", Color.white);
         changed |= ApplySprite("Fisherman", "fisherman", Color.white);
         changed |= ApplySprite("Player Fish", "player_fish", Color.white);
+        changed |= ApplySprite("Net Sprite", "net", new Color(0.62f, 0.95f, 1f, 0.86f));
+        changed |= ApplySprite("Big Fish Ally", "Fish_Large_1.png", Color.white);
         changed |= ApplySprite("Big Fish Ally", "big_fish", Color.white);
 
         if (changed)
