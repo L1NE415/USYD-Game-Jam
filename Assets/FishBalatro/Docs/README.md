@@ -58,6 +58,20 @@ or use the menu shortcut above.
 - Placeholder sprites live at `Assets/FishBalatro/Art/Generated/water_wave.png` and `Assets/FishBalatro/Art/Generated/seaweed.png`.
 - Use `Game Jam/Fish Balatro/Add Environment Animation Props` to add these objects to `Main.unity` without rebuilding the whole scene.
 
+## Capture Tool Art
+
+- Capture tools are grouped under `Capture Tools` in `Main.unity`.
+- The net is `Capture Tools/Net Sweep Pivot/Net Sprite`. Replace `Assets/FishBalatro/Art/Generated/net.png` or add an Animator to `Net Sprite` to swap in final net animation.
+- The claw is `Capture Tools/Claw Shot Hazard`, with `Claw Path` and `Claw Head` children.
+- The electric pattern is `Capture Tools/Electric Wave Hazard`, with `Electric Wave 1` through `Electric Wave 5` children.
+- `NetSweepHazard` moves and rotates the parent pivot, while the `Net Sprite` child handles the visible art and the `BoxCollider2D` catch area.
+
+## UI Art Hooks
+
+- Score-related UI is grouped under `Fish UI/Score UI`.
+- Alert-related UI is grouped under `Fish UI/Alert UI`.
+- Existing text and bars still drive the prototype UI, but these containers give UI artists stable objects for animation, replacement sprites, and layout work.
+
 ## Big Fish Mechanic
 
 The big fish is now a level-gating ally, not a banking/safe-zone mechanic. It
@@ -74,11 +88,12 @@ Fishermen cycle by level: net, claw, electric, then repeat. The boat stays the
 same, but the fisherman color and label change so the player can read the next
 threat before Alert fills.
 
-- Net Fisherman: drops a large pendulum net across roughly half the screen.
+- Net Fisherman: swings a large sprite-based pendulum net across roughly half the screen.
 - Claw Fisherman: fires claw shots from the boat at `45`, `90`, and `135` degrees toward the sea floor.
 - Electric Fisherman: sends slower horizontal electric waves downward one layer at a time, with larger fish-sized gaps between waves.
 - Dodging any capture tool keeps `TotalScore` and clears Alert/combo pressure.
 - Touching any capture tool ends the run. Press `R` to reload the scene and start again.
+- Generated net sprite: `Assets/FishBalatro/Art/Generated/net.png`.
 - Generated claw sprite: `Assets/FishBalatro/Art/Generated/claw.png`.
 
 ## Code Map
@@ -87,7 +102,7 @@ threat before Alert fills.
 - `FishPlayerController`: small fish movement, dash, arena bounds, and input compatibility.
 - `BaitPickup`: bait collision and the bait stat table.
 - `BaitSpawner`: weighted bait spawning and level-based bait count.
-- `NetSweepHazard`: runtime-built pendulum net visual, timing, and catch hitbox.
+- `NetSweepHazard`: sprite-based pendulum net timing and catch hitbox.
 - `ClawShotHazard`: three-angle claw volley and claw hit detection.
 - `ElectricWaveHazard`: top-to-bottom horizontal electric wave pattern.
 - `BigFishAlly`: big fish prompt and attack animation.
@@ -104,7 +119,7 @@ threat before Alert fills.
 - `TotalScore` is both the visible score and the currency used by the `E` attack.
 - `CurrentRunScore` is the greed streak cleared when the fish dodges a capture tool; getting caught ends the run instead.
 - Custom sprites assigned in `Main.unity` should stay untouched. The startup helper no longer auto-applies generated placeholder sprites, and the repair menu only fills objects whose SpriteRenderer is missing a sprite.
-- The rebuild tool preserves existing PNG files in `Assets/FishBalatro/Art/Generated`, so replacing `player_fish.png`, `big_fish.png`, or `water_panel.png` will not be overwritten by generated placeholder art.
+- The rebuild tool preserves existing PNG files in `Assets/FishBalatro/Art/Generated`, so replacing `player_fish.png`, `Fish_Large_1.png.png`, `net.png`, or `water_panel.png` will not be overwritten by generated placeholder art.
 - Most tuning values are public fields on `FishGameManager`, `FishPlayerController`, and `BaitSpawner`.
 
 ## Next Best Upgrades

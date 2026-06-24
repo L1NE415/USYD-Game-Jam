@@ -18,6 +18,7 @@ public class ClawShotHazard : MonoBehaviour
     private readonly float[] shotAngles = { 45f, 90f, 135f };
     private LineRenderer pathLine;
     private SpriteRenderer clawRenderer;
+    private bool isPlaying;
 
     public bool CaughtPlayer { get; private set; }
     public float Progress { get; private set; }
@@ -31,11 +32,15 @@ public class ClawShotHazard : MonoBehaviour
     private void Awake()
     {
         BuildVisualIfNeeded();
-        Hide();
+        if (!isPlaying)
+        {
+            Hide();
+        }
     }
 
     public IEnumerator PlayVolley(FishPlayerController player, int level)
     {
+        isPlaying = true;
         BuildVisualIfNeeded();
         gameObject.SetActive(true);
         transform.position = Vector3.zero;
@@ -61,6 +66,7 @@ public class ClawShotHazard : MonoBehaviour
 
     public void Hide()
     {
+        isPlaying = false;
         Progress = 0f;
         if (pathLine != null)
         {
@@ -133,9 +139,20 @@ public class ClawShotHazard : MonoBehaviour
             return;
         }
 
-        GameObject lineObject = new GameObject("Claw Path");
-        lineObject.transform.SetParent(transform, false);
-        pathLine = lineObject.AddComponent<LineRenderer>();
+        Transform lineTransform = transform.Find("Claw Path");
+        if (lineTransform == null)
+        {
+            GameObject lineObject = new GameObject("Claw Path");
+            lineObject.transform.SetParent(transform, false);
+            lineTransform = lineObject.transform;
+        }
+
+        pathLine = lineTransform.GetComponent<LineRenderer>();
+        if (pathLine == null)
+        {
+            pathLine = lineTransform.gameObject.AddComponent<LineRenderer>();
+        }
+
         pathLine.useWorldSpace = true;
         pathLine.positionCount = 0;
         pathLine.sortingOrder = sortingOrder;
@@ -147,10 +164,25 @@ public class ClawShotHazard : MonoBehaviour
             pathLine.sharedMaterial = new Material(shader);
         }
 
-        GameObject clawObject = new GameObject("Claw Head");
-        clawObject.transform.SetParent(transform, false);
-        clawRenderer = clawObject.AddComponent<SpriteRenderer>();
-        clawRenderer.sprite = clawSprite != null ? clawSprite : CreateProceduralClawSprite();
+        Transform clawTransform = transform.Find("Claw Head");
+        if (clawTransform == null)
+        {
+            GameObject clawObject = new GameObject("Claw Head");
+            clawObject.transform.SetParent(transform, false);
+            clawTransform = clawObject.transform;
+        }
+
+        clawRenderer = clawTransform.GetComponent<SpriteRenderer>();
+        if (clawRenderer == null)
+        {
+            clawRenderer = clawTransform.gameObject.AddComponent<SpriteRenderer>();
+        }
+
+        if (clawRenderer.sprite == null)
+        {
+            clawRenderer.sprite = clawSprite != null ? clawSprite : CreateProceduralClawSprite();
+        }
+
         clawRenderer.sortingOrder = sortingOrder + 1;
         clawRenderer.enabled = false;
     }
