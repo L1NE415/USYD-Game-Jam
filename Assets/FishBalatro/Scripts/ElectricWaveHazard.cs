@@ -50,41 +50,53 @@ public class ElectricWaveHazard : MonoBehaviour
         HideLines();
 
         Collider2D playerCollider = player != null ? player.GetComponent<Collider2D>() : null;
+        float durationMultiplier = FishGameSettings.ToolDurationMultiplier;
+        float tunedWarningSeconds = warningSeconds * durationMultiplier;
+        float tunedActiveSeconds = activeSeconds * durationMultiplier;
+        float tunedAfterWaveSeconds = afterWaveSeconds * durationMultiplier;
+        Color warningColor = new Color(1f, 0.92f, 0.25f, 0.55f);
+        Color activeColor = new Color(0.38f, 0.95f, 1f, 1f);
+        Color caughtColor = new Color(1f, 0.12f, 0.08f, 1f);
+        Color fadingColor = new Color(0.38f, 0.95f, 1f, 0.22f);
+        float warningWidth = 0.06f;
+        float activeWidth = 0.11f;
+        float caughtWidth = 0.16f;
+
         for (int i = 0; i < waveCount; i++)
         {
             float y = topY - i * waveSpacing;
             LineRenderer line = waveLines[i];
-            ConfigureLine(line, y, new Color(1f, 0.92f, 0.25f, 0.55f), 0.06f);
+            ConfigureLine(line, y, warningColor, warningWidth);
 
             float elapsed = 0f;
-            while (elapsed < warningSeconds)
+            while (elapsed < tunedWarningSeconds)
             {
                 elapsed += Time.deltaTime;
-                Progress = (i + Mathf.Clamp01(elapsed / warningSeconds) * 0.25f) / waveCount;
+                Progress = (i + Mathf.Clamp01(elapsed / tunedWarningSeconds) * 0.25f) / waveCount;
                 yield return null;
             }
 
-            ConfigureLine(line, y, new Color(0.38f, 0.95f, 1f, 1f), 0.11f);
+            ConfigureLine(line, y, activeColor, activeWidth);
 
             elapsed = 0f;
-            while (elapsed < activeSeconds)
+            while (elapsed < tunedActiveSeconds)
             {
                 elapsed += Time.deltaTime;
-                Progress = (i + Mathf.Clamp01(elapsed / activeSeconds)) / waveCount;
+                Progress = (i + Mathf.Clamp01(elapsed / tunedActiveSeconds)) / waveCount;
 
                 if (IsPlayerHit(playerCollider, player, y))
                 {
                     CaughtPlayer = true;
                     Progress = 1f;
-                    ConfigureLine(line, y, new Color(1f, 0.12f, 0.08f, 1f), 0.16f);
+                    ConfigureLine(line, y, caughtColor, caughtWidth);
                     yield break;
                 }
 
                 yield return null;
             }
 
-            ConfigureLine(line, y, new Color(0.38f, 0.95f, 1f, 0.22f), 0.06f);
-            yield return new WaitForSeconds(afterWaveSeconds);
+            ConfigureLine(line, y, fadingColor, warningWidth);
+            yield return new WaitForSeconds(tunedAfterWaveSeconds);
         }
 
         Hide();

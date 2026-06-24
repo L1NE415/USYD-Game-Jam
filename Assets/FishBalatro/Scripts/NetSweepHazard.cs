@@ -56,16 +56,19 @@ public class NetSweepHazard : MonoBehaviour
         float direction = level % 2 == 0 ? -1f : 1f;
         float startAngle = -swingAngle * direction;
         float endAngle = swingAngle * direction;
+        float durationMultiplier = FishGameSettings.ToolDurationMultiplier;
+        float tunedWarningSeconds = warningSeconds * durationMultiplier;
+        float tunedSweepSeconds = sweepSeconds * durationMultiplier;
 
         hitbox.enabled = false;
         SetNetColor(new Color(1f, 0.9f, 0.35f, 0.55f));
         transform.rotation = Quaternion.Euler(0f, 0f, startAngle);
 
         float elapsed = 0f;
-        while (elapsed < warningSeconds)
+        while (elapsed < tunedWarningSeconds)
         {
             elapsed += Time.deltaTime;
-            Progress = Mathf.Clamp01(elapsed / warningSeconds) * 0.18f;
+            Progress = Mathf.Clamp01(elapsed / tunedWarningSeconds) * 0.18f;
             yield return null;
         }
 
@@ -73,10 +76,10 @@ public class NetSweepHazard : MonoBehaviour
         SetNetColor(new Color(0.62f, 0.95f, 1f, 0.86f));
 
         elapsed = 0f;
-        while (elapsed < sweepSeconds)
+        while (elapsed < tunedSweepSeconds)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / sweepSeconds);
+            float t = Mathf.Clamp01(elapsed / tunedSweepSeconds);
             float eased = Mathf.SmoothStep(0f, 1f, t);
             transform.rotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(startAngle, endAngle, eased));
             Progress = Mathf.Lerp(0.18f, 1f, t);

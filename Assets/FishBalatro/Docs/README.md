@@ -86,17 +86,27 @@ with `E` from anywhere.
 
 ## Fisherman Types
 
-Fishermen cycle by level: net, claw, electric, then repeat. The boat stays the
-same, but the fisherman color and label change so the player can read the next
-threat before Alert fills.
+Fishermen cycle by level: claw, electric, net, then repeat. The boat shape stays
+the same, but each type has its own scene entity so artists can replace sprites
+or add an Animator without touching gameplay code.
 
-- Net Fisherman: swings a large sprite-based pendulum net across roughly half the screen.
 - Claw Fisherman: fires claw shots from the boat at `45`, `90`, and `135` degrees toward the sea floor.
 - Electric Fisherman: sends slower horizontal electric waves downward one layer at a time, with larger fish-sized gaps between waves.
+- Net Fisherman: swings a large sprite-based pendulum net across roughly half the screen.
 - Dodging any capture tool keeps `TotalScore` and clears Alert/combo pressure.
 - Touching any capture tool ends the run. Press `R` to reload the scene and start again.
 - Generated net sprite: `Assets/FishBalatro/Art/Generated/net.png`.
 - Generated claw sprite: `Assets/FishBalatro/Art/Generated/claw.png`.
+
+Artist-facing fisherman entities live under `Fisherman Rig`:
+
+- `Fisherman Rig/Claw Fisherman`
+- `Fisherman Rig/Electric Fisherman`
+- `Fisherman Rig/Net Fisherman`
+
+Each one contains a `Fisherman Body`, `Boat`, `Line Anchor`, type-specific
+`... Tool Prop`, `Notice`, and `FishermanName`. Only the current level's
+fisherman is active during play.
 
 ## Code Map
 

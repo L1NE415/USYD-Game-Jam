@@ -58,7 +58,7 @@ public class ClawShotHazard : MonoBehaviour
                 yield break;
             }
 
-            yield return new WaitForSeconds(betweenShotsSeconds);
+            yield return new WaitForSeconds(betweenShotsSeconds * FishGameSettings.ToolDurationMultiplier);
         }
 
         Hide();
@@ -87,23 +87,26 @@ public class ClawShotHazard : MonoBehaviour
         Vector2 direction = AngleToDownwardDirection(angle);
         Vector2 end = start + direction * shotLength;
         Collider2D playerCollider = player != null ? player.GetComponent<Collider2D>() : null;
+        float durationMultiplier = FishGameSettings.ToolDurationMultiplier;
+        float tunedWarningSeconds = warningSeconds * durationMultiplier;
+        float tunedShotSeconds = shotSeconds * durationMultiplier;
 
         SetLine(start, end, new Color(1f, 0.85f, 0.25f, 0.5f), 0.045f);
         SetClaw(start, direction, new Color(1f, 0.85f, 0.25f, 0.75f));
 
         float elapsed = 0f;
-        while (elapsed < warningSeconds)
+        while (elapsed < tunedWarningSeconds)
         {
             elapsed += Time.deltaTime;
-            Progress = (shotIndex + Mathf.Clamp01(elapsed / warningSeconds) * 0.25f) / shotCount;
+            Progress = (shotIndex + Mathf.Clamp01(elapsed / tunedWarningSeconds) * 0.25f) / shotCount;
             yield return null;
         }
 
         elapsed = 0f;
-        while (elapsed < shotSeconds)
+        while (elapsed < tunedShotSeconds)
         {
             elapsed += Time.deltaTime;
-            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / shotSeconds));
+            float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / tunedShotSeconds));
             Vector2 currentEnd = Vector2.Lerp(start, end, t);
             SetLine(start, currentEnd, new Color(0.88f, 0.92f, 0.95f, 0.96f), 0.07f);
             SetClaw(currentEnd, direction, Color.white);

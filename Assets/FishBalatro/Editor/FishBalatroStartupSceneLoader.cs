@@ -43,11 +43,35 @@ public static class FishBalatroStartupSceneLoader
         changed |= ApplySprite("Net Sprite", "net", new Color(0.62f, 0.95f, 1f, 0.86f));
         changed |= ApplySprite("Big Fish Ally", "Fish_Large_1.png", Color.white);
         changed |= ApplySprite("Big Fish Ally", "big_fish", Color.white);
+        changed |= EnsureFishermanVariantEntitiesInActiveScene();
 
         if (changed)
         {
             EditorSceneManager.MarkSceneDirty(activeScene);
             Debug.Log("Fish Balatro missing sprite artwork repaired in Main.unity.");
+        }
+    }
+
+    [MenuItem("Game Jam/Fish Balatro/Create Fisherman Variant Entities")]
+    public static void EnsureFishermanVariantEntities()
+    {
+        if (SceneManager.GetActiveScene().path.Replace("\\", "/") != MainScenePath && File.Exists(MainScenePath))
+        {
+            EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
+        }
+
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (activeScene.path.Replace("\\", "/") != MainScenePath)
+        {
+            return;
+        }
+
+        if (EnsureFishermanVariantEntitiesInActiveScene())
+        {
+            EditorSceneManager.MarkSceneDirty(activeScene);
+            EditorSceneManager.SaveScene(activeScene);
+            AssetDatabase.SaveAssets();
+            Debug.Log("Fish Balatro fisherman variant entities created in Main.unity.");
         }
     }
 
@@ -78,6 +102,26 @@ public static class FishBalatroStartupSceneLoader
         }
 
         return roots.Length == 1 && roots[0].name == "Main Camera";
+    }
+
+    private static bool EnsureFishermanVariantEntitiesInActiveScene()
+    {
+        GameObject rig = FindInActiveScene("Fisherman Rig");
+        if (rig == null)
+        {
+            return false;
+        }
+
+        FishermanController fisherman = rig.GetComponent<FishermanController>();
+        if (fisherman == null)
+        {
+            fisherman = rig.AddComponent<FishermanController>();
+        }
+
+        bool changed = fisherman.EnsureVariantEntities();
+        fisherman.SetVariant(FishFishermanType.Claw, 1);
+        EditorUtility.SetDirty(fisherman);
+        return changed;
     }
 
     private static bool ApplySprite(string objectName, string spriteName, Color color)

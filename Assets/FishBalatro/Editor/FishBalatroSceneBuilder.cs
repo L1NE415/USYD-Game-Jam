@@ -451,29 +451,74 @@ public static class FishBalatroSceneBuilder
         GameObject root = new GameObject("Fisherman Rig");
         root.transform.position = new Vector3(0f, 4.0f, 0f);
 
-        GameObject boatObject = CreateSpriteObject("Boat", sprites["boat"], new Vector3(0f, 0f, 0f), Vector3.one, 10, root.transform);
+        FishermanController fisherman = root.AddComponent<FishermanController>();
+        fisherman.clawFisherman = CreateFishermanVariantEntity(FishFishermanType.Claw, "Claw Fisherman", sprites, root.transform);
+        fisherman.electricFisherman = CreateFishermanVariantEntity(FishFishermanType.Electric, "Electric Fisherman", sprites, root.transform);
+        fisherman.netFisherman = CreateFishermanVariantEntity(FishFishermanType.Net, "Net Fisherman", sprites, root.transform);
+        fisherman.SetVariant(FishFishermanType.Claw, 1);
+        return fisherman;
+    }
+
+    private static FishermanController.FishermanVariantEntity CreateFishermanVariantEntity(FishFishermanType type, string rootName, Dictionary<string, Sprite> sprites, Transform parent)
+    {
+        GameObject variantRoot = new GameObject(rootName);
+        variantRoot.transform.SetParent(parent, false);
+        variantRoot.transform.localPosition = Vector3.zero;
+
+        Color typeColor = GetFishermanVariantColor(type);
+        GameObject boatObject = CreateSpriteObject("Boat", sprites["boat"], new Vector3(0f, 0f, 0f), Vector3.one, 10, variantRoot.transform, Color.Lerp(Color.white, typeColor, 0.18f));
         boatObject.transform.localPosition = new Vector3(0f, 0f, 0f);
 
-        GameObject bodyObject = CreateSpriteObject("Fisherman", sprites["fisherman"], new Vector3(0.38f, 0.68f, 0f), Vector3.one, 12, root.transform);
+        GameObject bodyObject = CreateSpriteObject("Fisherman Body", sprites["fisherman"], new Vector3(0.38f, 0.68f, 0f), Vector3.one, 12, variantRoot.transform, typeColor);
         bodyObject.transform.localPosition = new Vector3(0.38f, 0.68f, 0f);
 
-        Transform anchor = CreateMarker("Line Anchor", new Vector3(1.25f, 0.22f, 0f), root.transform);
+        Transform anchor = CreateMarker("Line Anchor", new Vector3(1.25f, 0.22f, 0f), variantRoot.transform);
+        Transform toolProp = CreateMarker(GetFishermanToolPropName(type), new Vector3(0.72f, 0.66f, 0f), variantRoot.transform);
 
-        TextMeshPro exclamation = CreateWorldText("Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70, root.transform);
+        TextMeshPro exclamation = CreateWorldText("Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70, variantRoot.transform);
         exclamation.transform.localPosition = new Vector3(0.5f, 1.55f, 0f);
 
-        TextMeshPro name = CreateWorldText("FishermanName", "Fisherman 1", new Vector3(0f, 1.55f, 0f), 0.85f, Color.white, 65, root.transform);
+        TextMeshPro name = CreateWorldText("FishermanName", FishermanController.GetVariantName(type), new Vector3(0f, 1.55f, 0f), 0.85f, Color.white, 65, variantRoot.transform);
         name.transform.localPosition = new Vector3(-0.85f, 1.48f, 0f);
         name.alignment = TextAlignmentOptions.Center;
 
-        FishermanController fisherman = root.AddComponent<FishermanController>();
-        fisherman.lineAnchor = anchor;
-        fisherman.boatRenderer = boatObject.GetComponent<SpriteRenderer>();
-        fisherman.fishermanRenderer = bodyObject.GetComponent<SpriteRenderer>();
-        fisherman.exclamationText = exclamation;
-        fisherman.nameText = name;
-        fisherman.SetVariant(FishFishermanType.Claw, 1);
-        return fisherman;
+        return new FishermanController.FishermanVariantEntity
+        {
+            type = type,
+            root = variantRoot,
+            lineAnchor = anchor,
+            toolPropAnchor = toolProp,
+            fishermanRenderer = bodyObject.GetComponent<SpriteRenderer>(),
+            boatRenderer = boatObject.GetComponent<SpriteRenderer>(),
+            exclamationText = exclamation,
+            nameText = name
+        };
+    }
+
+    private static Color GetFishermanVariantColor(FishFishermanType type)
+    {
+        switch (type)
+        {
+            case FishFishermanType.Claw:
+                return new Color(1f, 0.58f, 0.22f);
+            case FishFishermanType.Electric:
+                return new Color(1f, 0.92f, 0.28f);
+            default:
+                return new Color(0.35f, 0.9f, 1f);
+        }
+    }
+
+    private static string GetFishermanToolPropName(FishFishermanType type)
+    {
+        switch (type)
+        {
+            case FishFishermanType.Claw:
+                return "Claw Tool Prop";
+            case FishFishermanType.Electric:
+                return "Electric Tool Prop";
+            default:
+                return "Net Tool Prop";
+        }
     }
 
     private static FishingLineView CreateFishingLine(FishGameManager gameManager, FishermanController fisherman, FishPlayerController player)

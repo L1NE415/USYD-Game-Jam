@@ -41,17 +41,26 @@ public class FishUIController : MonoBehaviour
     public Button settingsButton;
     public GameObject settingsPanel;
     public TMP_Text settingsTitleText;
+    public TMP_Text musicVolumeValueText;
+    public TMP_Text sfxVolumeValueText;
+    public TMP_Text uiScaleValueText;
+    public TMP_Text difficultyValueText;
     public TMP_Text volumeValueText;
+    public Slider musicVolumeSlider;
+    public Slider sfxVolumeSlider;
+    public Slider uiScaleSlider;
     public Slider volumeSlider;
     public Toggle baitLabelsToggle;
     public Toggle controlsGuideToggle;
+    public Button difficultyButton;
     public Button restartButton;
     public Button closeSettingsButton;
 
-    private const string VolumePrefKey = "FishBalatro.Settings.Volume";
     private const string BaitLabelsPrefKey = "FishBalatro.Settings.ShowBaitLabels";
     private const string ControlsGuidePrefKey = "FishBalatro.Settings.ShowControlsGuide";
-    private float settingsVolume = 1f;
+    private float settingsMusicVolume = 1f;
+    private float settingsSfxVolume = 1f;
+    private float settingsUiScale = 1f;
     private bool showBaitLabels = true;
     private bool showControlsGuide = true;
 
@@ -308,25 +317,49 @@ public class FishUIController : MonoBehaviour
 
         bool keepOpen = settingsPanel != null && settingsPanel.activeSelf;
         settingsPanel = EnsureSettingsPanel(settingsRoot);
+        RemoveSettingsChild(settingsPanel.transform, "Reduce Flashing Toggle");
         settingsPanel.SetActive(keepOpen);
 
-        settingsTitleText = EnsureSettingsText(settingsPanel.transform, "Title", "SETTINGS", new Vector2(0f, 1f), new Vector2(24f, -20f), new Vector2(340f, 34f), 28f, TextAlignmentOptions.Left);
-        EnsureSettingsText(settingsPanel.transform, "Volume Label", "Volume", new Vector2(0f, 1f), new Vector2(24f, -66f), new Vector2(180f, 30f), 23f, TextAlignmentOptions.Left);
-        volumeValueText = EnsureSettingsText(settingsPanel.transform, "Volume Value", "", new Vector2(1f, 1f), new Vector2(-24f, -66f), new Vector2(110f, 30f), 23f, TextAlignmentOptions.Right);
-        volumeSlider = EnsureSlider(settingsPanel.transform, "Volume Slider", new Vector2(0f, 1f), new Vector2(24f, -108f), new Vector2(342f, 30f));
+        settingsTitleText = EnsureSettingsText(settingsPanel.transform, "Title", "SETTINGS", new Vector2(0f, 1f), new Vector2(24f, -20f), new Vector2(370f, 34f), 28f, TextAlignmentOptions.Left);
+        EnsureSettingsText(settingsPanel.transform, "Difficulty Label", "Difficulty", new Vector2(0f, 1f), new Vector2(24f, -66f), new Vector2(180f, 30f), 23f, TextAlignmentOptions.Left);
+        difficultyButton = EnsureTextButton(settingsPanel.transform, "Difficulty Button", "", new Vector2(1f, 1f), new Vector2(-24f, -62f), new Vector2(160f, 40f));
 
-        baitLabelsToggle = EnsureToggle(settingsPanel.transform, "Bait Labels Toggle", "Bait labels", new Vector2(0f, 1f), new Vector2(24f, -158f), new Vector2(330f, 34f));
-        controlsGuideToggle = EnsureToggle(settingsPanel.transform, "Controls Guide Toggle", "Controls guide", new Vector2(0f, 1f), new Vector2(24f, -202f), new Vector2(330f, 34f));
-        restartButton = EnsureTextButton(settingsPanel.transform, "Restart Button", "RESTART", new Vector2(0f, 1f), new Vector2(24f, -270f), new Vector2(154f, 44f));
-        closeSettingsButton = EnsureTextButton(settingsPanel.transform, "Close Button", "CLOSE", new Vector2(1f, 1f), new Vector2(-24f, -270f), new Vector2(154f, 44f));
+        EnsureSettingsText(settingsPanel.transform, "Music Volume Label", "Music volume", new Vector2(0f, 1f), new Vector2(24f, -118f), new Vector2(210f, 30f), 23f, TextAlignmentOptions.Left);
+        musicVolumeValueText = EnsureSettingsText(settingsPanel.transform, "Music Volume Value", "", new Vector2(1f, 1f), new Vector2(-24f, -118f), new Vector2(110f, 30f), 23f, TextAlignmentOptions.Right);
+        musicVolumeSlider = EnsureSlider(settingsPanel.transform, "Music Volume Slider", new Vector2(0f, 1f), new Vector2(24f, -158f), new Vector2(382f, 30f));
 
-        volumeSlider.SetValueWithoutNotify(settingsVolume);
+        EnsureSettingsText(settingsPanel.transform, "SFX Volume Label", "SFX volume", new Vector2(0f, 1f), new Vector2(24f, -204f), new Vector2(210f, 30f), 23f, TextAlignmentOptions.Left);
+        sfxVolumeValueText = EnsureSettingsText(settingsPanel.transform, "SFX Volume Value", "", new Vector2(1f, 1f), new Vector2(-24f, -204f), new Vector2(110f, 30f), 23f, TextAlignmentOptions.Right);
+        sfxVolumeSlider = EnsureSlider(settingsPanel.transform, "SFX Volume Slider", new Vector2(0f, 1f), new Vector2(24f, -244f), new Vector2(382f, 30f));
+
+        EnsureSettingsText(settingsPanel.transform, "UI Scale Label", "UI scale", new Vector2(0f, 1f), new Vector2(24f, -290f), new Vector2(210f, 30f), 23f, TextAlignmentOptions.Left);
+        uiScaleValueText = EnsureSettingsText(settingsPanel.transform, "UI Scale Value", "", new Vector2(1f, 1f), new Vector2(-24f, -290f), new Vector2(110f, 30f), 23f, TextAlignmentOptions.Right);
+        uiScaleSlider = EnsureSlider(settingsPanel.transform, "UI Scale Slider", new Vector2(0f, 1f), new Vector2(24f, -330f), new Vector2(382f, 30f));
+        uiScaleSlider.minValue = 0.85f;
+        uiScaleSlider.maxValue = 1.25f;
+
+        baitLabelsToggle = EnsureToggle(settingsPanel.transform, "Bait Labels Toggle", "Bait labels", new Vector2(0f, 1f), new Vector2(24f, -382f), new Vector2(380f, 34f));
+        controlsGuideToggle = EnsureToggle(settingsPanel.transform, "Controls Guide Toggle", "Controls guide", new Vector2(0f, 1f), new Vector2(24f, -426f), new Vector2(380f, 34f));
+        restartButton = EnsureTextButton(settingsPanel.transform, "Restart Button", "RESTART", new Vector2(0f, 1f), new Vector2(24f, -482f), new Vector2(170f, 44f));
+        closeSettingsButton = EnsureTextButton(settingsPanel.transform, "Close Button", "CLOSE", new Vector2(1f, 1f), new Vector2(-24f, -482f), new Vector2(170f, 44f));
+
+        volumeValueText = musicVolumeValueText;
+        volumeSlider = musicVolumeSlider;
+        musicVolumeSlider.SetValueWithoutNotify(settingsMusicVolume);
+        sfxVolumeSlider.SetValueWithoutNotify(settingsSfxVolume);
+        uiScaleSlider.SetValueWithoutNotify(settingsUiScale);
         baitLabelsToggle.SetIsOnWithoutNotify(showBaitLabels);
         controlsGuideToggle.SetIsOnWithoutNotify(showControlsGuide);
-        UpdateVolumeText();
+        UpdateSettingsText();
 
-        volumeSlider.onValueChanged.RemoveAllListeners();
-        volumeSlider.onValueChanged.AddListener(SetMasterVolume);
+        difficultyButton.onClick.RemoveAllListeners();
+        difficultyButton.onClick.AddListener(CycleDifficulty);
+        musicVolumeSlider.onValueChanged.RemoveAllListeners();
+        musicVolumeSlider.onValueChanged.AddListener(SetMusicVolume);
+        sfxVolumeSlider.onValueChanged.RemoveAllListeners();
+        sfxVolumeSlider.onValueChanged.AddListener(SetSfxVolume);
+        uiScaleSlider.onValueChanged.RemoveAllListeners();
+        uiScaleSlider.onValueChanged.AddListener(SetUiScale);
         baitLabelsToggle.onValueChanged.RemoveAllListeners();
         baitLabelsToggle.onValueChanged.AddListener(SetBaitLabelsVisible);
         controlsGuideToggle.onValueChanged.RemoveAllListeners();
@@ -350,13 +383,31 @@ public class FishUIController : MonoBehaviour
         rect.anchorMax = new Vector2(1f, 1f);
         rect.pivot = new Vector2(1f, 1f);
         rect.anchoredPosition = new Vector2(-24f, -86f);
-        rect.sizeDelta = new Vector2(390f, 330f);
+        rect.sizeDelta = new Vector2(430f, 546f);
 
         Image image = panel.GetComponent<Image>();
         image.sprite = settingsPanelSprite;
         image.type = settingsPanelSprite != null && settingsPanelSprite.border.sqrMagnitude > 0f ? Image.Type.Sliced : Image.Type.Simple;
         image.color = Color.white;
         return panel;
+    }
+
+    private static void RemoveSettingsChild(Transform parent, string childName)
+    {
+        Transform child = parent.Find(childName);
+        if (child == null)
+        {
+            return;
+        }
+
+        if (Application.isPlaying)
+        {
+            Destroy(child.gameObject);
+        }
+        else
+        {
+            DestroyImmediate(child.gameObject);
+        }
     }
 
     private Button EnsureIconButton(Transform parent, string name, Sprite sprite, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
@@ -528,19 +579,61 @@ public class FishUIController : MonoBehaviour
 
     private void LoadSettings()
     {
-        settingsVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(VolumePrefKey, 1f));
+        FishGameSettings.EnsureLoaded();
+        settingsMusicVolume = FishGameSettings.MusicVolume;
+        settingsSfxVolume = FishGameSettings.SfxVolume;
+        settingsUiScale = FishGameSettings.UiScale;
         showBaitLabels = PlayerPrefs.GetInt(BaitLabelsPrefKey, 1) == 1;
         showControlsGuide = PlayerPrefs.GetInt(ControlsGuidePrefKey, 1) == 1;
     }
 
     private void ApplySettings()
     {
-        AudioListener.volume = settingsVolume;
         BaitPickup.SetLabelsVisible(showBaitLabels);
+        ApplyHudScale();
 
         if (controlsPanel != null)
         {
             controlsPanel.SetActive(showControlsGuide);
+        }
+    }
+
+    private void ApplyHudScale()
+    {
+        float scale = settingsUiScale;
+        SetRectLocalScale(scorePanelImage, scale);
+        SetRectLocalScale(multiplierPanelImage, scale);
+        SetRectLocalScale(alertPanelImage, scale);
+        SetRectLocalScale(totalScoreText, scale);
+        SetRectLocalScale(multiplierText, scale);
+        SetRectLocalScale(alertText, scale);
+        SetRectLocalScale(comboText, scale);
+        SetRectLocalScale(netSweepPanel, scale);
+
+        if (alertFill != null && alertFill.transform.parent != null)
+        {
+            alertFill.transform.parent.localScale = Vector3.one * scale;
+        }
+
+        if (controlsPanel != null)
+        {
+            controlsPanel.transform.localScale = Vector3.one * scale;
+        }
+    }
+
+    private static void SetRectLocalScale(Component component, float scale)
+    {
+        if (component != null)
+        {
+            component.transform.localScale = Vector3.one * scale;
+        }
+    }
+
+    private static void SetRectLocalScale(GameObject obj, float scale)
+    {
+        if (obj != null)
+        {
+            obj.transform.localScale = Vector3.one * scale;
         }
     }
 
@@ -557,13 +650,35 @@ public class FishUIController : MonoBehaviour
         }
     }
 
-    private void SetMasterVolume(float value)
+    private void SetMusicVolume(float value)
     {
-        settingsVolume = Mathf.Clamp01(value);
-        PlayerPrefs.SetFloat(VolumePrefKey, settingsVolume);
-        PlayerPrefs.Save();
-        AudioListener.volume = settingsVolume;
-        UpdateVolumeText();
+        settingsMusicVolume = Mathf.Clamp01(value);
+        FishGameSettings.SetMusicVolume(settingsMusicVolume);
+        UpdateSettingsText();
+    }
+
+    private void SetSfxVolume(float value)
+    {
+        settingsSfxVolume = Mathf.Clamp01(value);
+        FishGameSettings.SetSfxVolume(settingsSfxVolume);
+        UpdateSettingsText();
+    }
+
+    private void SetUiScale(float value)
+    {
+        settingsUiScale = Mathf.Clamp(value, 0.85f, 1.25f);
+        FishGameSettings.SetUiScale(settingsUiScale);
+        ApplyHudScale();
+        UpdateSettingsText();
+    }
+
+    private void CycleDifficulty()
+    {
+        FishDifficulty nextDifficulty = FishGameSettings.Difficulty == FishDifficulty.Hard
+            ? FishDifficulty.Easy
+            : (FishDifficulty)((int)FishGameSettings.Difficulty + 1);
+        FishGameSettings.SetDifficulty(nextDifficulty);
+        UpdateSettingsText();
     }
 
     private void SetBaitLabelsVisible(bool visible)
@@ -586,9 +701,18 @@ public class FishUIController : MonoBehaviour
         }
     }
 
-    private void UpdateVolumeText()
+    private void UpdateSettingsText()
     {
-        SetText(volumeValueText, Mathf.RoundToInt(settingsVolume * 100f) + "%");
+        SetText(musicVolumeValueText, Mathf.RoundToInt(settingsMusicVolume * 100f) + "%");
+        SetText(sfxVolumeValueText, Mathf.RoundToInt(settingsSfxVolume * 100f) + "%");
+        SetText(uiScaleValueText, Mathf.RoundToInt(settingsUiScale * 100f) + "%");
+        SetText(difficultyValueText, FishGameSettings.GetDifficultyLabel());
+
+        if (difficultyButton != null)
+        {
+            TMP_Text label = difficultyButton.GetComponentInChildren<TMP_Text>();
+            SetText(label, FishGameSettings.GetDifficultyLabel());
+        }
     }
 
     private void RestartFromSettings()

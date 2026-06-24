@@ -83,6 +83,8 @@ public class FishGameManager : MonoBehaviour
 
     private void Awake()
     {
+        FishGameSettings.EnsureLoaded();
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -314,7 +316,7 @@ public class FishGameManager : MonoBehaviour
 
     private void AddAlert(float amount)
     {
-        alert = Mathf.Clamp(alert + amount, 0f, 100f);
+        alert = Mathf.Clamp(alert + amount * FishGameSettings.AlertMultiplier, 0f, 100f);
 
         if (alert >= 100f)
         {

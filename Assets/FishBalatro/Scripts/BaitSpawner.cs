@@ -96,7 +96,8 @@ public class BaitSpawner : MonoBehaviour
     {
         int level = gameManager != null ? gameManager.Level : 1;
         budgetLevel = level;
-        levelBaitBudget = Mathf.Min(maxLevelBaitBudget, baseLevelBaitBudget + (level - 1) * baitBudgetPerLevel);
+        int tunedBudget = baseLevelBaitBudget + (level - 1) * baitBudgetPerLevel + FishGameSettings.BaitBudgetBonus;
+        levelBaitBudget = Mathf.Clamp(tunedBudget, 8, maxLevelBaitBudget);
         spawnedThisLevel = 0;
         emergencyBudgetUsed = false;
     }
@@ -114,7 +115,7 @@ public class BaitSpawner : MonoBehaviour
     {
         int level = gameManager != null ? gameManager.Level : 1;
         int levelBonus = Mathf.Min(2, level - 1);
-        return Mathf.Clamp(baseMaxBaits + levelBonus, 1, maxActiveBaits);
+        return Mathf.Clamp(baseMaxBaits + levelBonus + FishGameSettings.BaitTargetBonus, 1, maxActiveBaits);
     }
 
     private void AddEmergencyBudgetIfNeeded()
