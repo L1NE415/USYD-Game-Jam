@@ -1,6 +1,7 @@
 using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // Thin UI adapter. FishGameManager owns the values; this script only copies
@@ -35,6 +36,24 @@ public class FishUIController : MonoBehaviour
     public GameObject controlsPanel;
     public TMP_Text controlsText;
     public SpriteRenderer controlsWorldPanelRenderer;
+    public Sprite gearButtonSprite;
+    public Sprite settingsPanelSprite;
+    public Button settingsButton;
+    public GameObject settingsPanel;
+    public TMP_Text settingsTitleText;
+    public TMP_Text volumeValueText;
+    public Slider volumeSlider;
+    public Toggle baitLabelsToggle;
+    public Toggle controlsGuideToggle;
+    public Button restartButton;
+    public Button closeSettingsButton;
+
+    private const string VolumePrefKey = "FishBalatro.Settings.Volume";
+    private const string BaitLabelsPrefKey = "FishBalatro.Settings.ShowBaitLabels";
+    private const string ControlsGuidePrefKey = "FishBalatro.Settings.ShowControlsGuide";
+    private float settingsVolume = 1f;
+    private bool showBaitLabels = true;
+    private bool showControlsGuide = true;
 
     private void Awake()
     {
@@ -45,6 +64,7 @@ public class FishUIController : MonoBehaviour
         }
 
         SetCanvasRendering(true);
+        EnsureEventSystemInputModule();
         EnsureHudLayout();
         EnsureGameOverOverlay();
     }
@@ -136,6 +156,8 @@ public class FishUIController : MonoBehaviour
         alertPanelSprite = alertPanelSprite != null ? alertPanelSprite : CreateAlertPanelSprite();
         controlsPanelSprite = controlsPanelSprite != null ? controlsPanelSprite : CreatePanelSprite(260, 118, new Color32(255, 86, 75, 255));
         alertSegmentSprite = alertSegmentSprite != null ? alertSegmentSprite : CreateAlertSegmentSprite();
+        gearButtonSprite = gearButtonSprite != null ? gearButtonSprite : CreateGearSprite();
+        settingsPanelSprite = settingsPanelSprite != null ? settingsPanelSprite : CreatePanelSprite(280, 220, new Color32(96, 173, 222, 255));
 
         RectTransform scoreRoot = EnsureContainer("Score UI", transform);
         RectTransform alertRoot = EnsureContainer("Alert UI", transform);
@@ -144,12 +166,12 @@ public class FishUIController : MonoBehaviour
 
         scorePanelImage = EnsurePanelImage(scoreRoot, "Score Panel", scorePanelSprite, new Vector2(0f, 1f), new Vector2(24f, -18f), new Vector2(250f, 86f), TextAnchor.UpperLeft);
         multiplierPanelImage = EnsurePanelImage(scoreRoot, "Multiplier Panel", multiplierPanelSprite, new Vector2(0f, 1f), new Vector2(292f, -18f), new Vector2(250f, 86f), TextAnchor.UpperLeft);
-        alertPanelImage = EnsurePanelImage(alertRoot, "Alert Meter Panel", alertPanelSprite, new Vector2(1f, 1f), new Vector2(-24f, -18f), new Vector2(500f, 72f), TextAnchor.UpperRight);
+        alertPanelImage = EnsurePanelImage(alertRoot, "Alert Meter Panel", alertPanelSprite, new Vector2(1f, 1f), new Vector2(-94f, -18f), new Vector2(500f, 72f), TextAnchor.UpperRight);
         controlsPanelImage = null;
 
         ConfigureText(totalScoreText, scoreRoot, new Vector2(0f, 1f), new Vector2(42f, -27f), new Vector2(214f, 68f), 28f, Color.white, TextAlignmentOptions.Center);
         ConfigureText(multiplierText, scoreRoot, new Vector2(0f, 1f), new Vector2(310f, -27f), new Vector2(214f, 68f), 28f, Color.white, TextAlignmentOptions.Center);
-        ConfigureText(alertText, alertRoot, new Vector2(1f, 1f), new Vector2(-44f, -26f), new Vector2(430f, 30f), 24f, Color.white, TextAlignmentOptions.Center);
+        ConfigureText(alertText, alertRoot, new Vector2(1f, 1f), new Vector2(-114f, -26f), new Vector2(430f, 30f), 24f, Color.white, TextAlignmentOptions.Center);
         ConfigureText(comboText, transform, new Vector2(0.5f, 0f), new Vector2(0f, 112f), new Vector2(980f, 44f), 28f, new Color(1f, 0.92f, 0.56f), TextAlignmentOptions.Center);
 
         if (alertFill != null)
@@ -170,12 +192,13 @@ public class FishUIController : MonoBehaviour
                 bar.anchorMin = new Vector2(1f, 1f);
                 bar.anchorMax = new Vector2(1f, 1f);
                 bar.pivot = new Vector2(1f, 1f);
-                bar.anchoredPosition = new Vector2(-44f, -54f);
+                bar.anchoredPosition = new Vector2(-114f, -54f);
                 bar.sizeDelta = new Vector2(430f, 22f);
             }
         }
 
         EnsureWorldControlsHint();
+        EnsureSettingsMenu();
 
         SetObjectActive(levelText, false);
         SetObjectActive(currentRunText, false);
@@ -274,6 +297,323 @@ public class FishUIController : MonoBehaviour
         }
     }
 
+    private void EnsureSettingsMenu()
+    {
+        LoadSettings();
+
+        RectTransform settingsRoot = EnsureContainer("Settings UI", transform);
+        settingsButton = EnsureIconButton(settingsRoot, "Settings Gear Button", gearButtonSprite, new Vector2(1f, 1f), new Vector2(-24f, -18f), new Vector2(58f, 58f));
+        settingsButton.onClick.RemoveAllListeners();
+        settingsButton.onClick.AddListener(ToggleSettingsPanel);
+
+        bool keepOpen = settingsPanel != null && settingsPanel.activeSelf;
+        settingsPanel = EnsureSettingsPanel(settingsRoot);
+        settingsPanel.SetActive(keepOpen);
+
+        settingsTitleText = EnsureSettingsText(settingsPanel.transform, "Title", "SETTINGS", new Vector2(0f, 1f), new Vector2(24f, -20f), new Vector2(340f, 34f), 28f, TextAlignmentOptions.Left);
+        EnsureSettingsText(settingsPanel.transform, "Volume Label", "Volume", new Vector2(0f, 1f), new Vector2(24f, -66f), new Vector2(180f, 30f), 23f, TextAlignmentOptions.Left);
+        volumeValueText = EnsureSettingsText(settingsPanel.transform, "Volume Value", "", new Vector2(1f, 1f), new Vector2(-24f, -66f), new Vector2(110f, 30f), 23f, TextAlignmentOptions.Right);
+        volumeSlider = EnsureSlider(settingsPanel.transform, "Volume Slider", new Vector2(0f, 1f), new Vector2(24f, -108f), new Vector2(342f, 30f));
+
+        baitLabelsToggle = EnsureToggle(settingsPanel.transform, "Bait Labels Toggle", "Bait labels", new Vector2(0f, 1f), new Vector2(24f, -158f), new Vector2(330f, 34f));
+        controlsGuideToggle = EnsureToggle(settingsPanel.transform, "Controls Guide Toggle", "Controls guide", new Vector2(0f, 1f), new Vector2(24f, -202f), new Vector2(330f, 34f));
+        restartButton = EnsureTextButton(settingsPanel.transform, "Restart Button", "RESTART", new Vector2(0f, 1f), new Vector2(24f, -270f), new Vector2(154f, 44f));
+        closeSettingsButton = EnsureTextButton(settingsPanel.transform, "Close Button", "CLOSE", new Vector2(1f, 1f), new Vector2(-24f, -270f), new Vector2(154f, 44f));
+
+        volumeSlider.SetValueWithoutNotify(settingsVolume);
+        baitLabelsToggle.SetIsOnWithoutNotify(showBaitLabels);
+        controlsGuideToggle.SetIsOnWithoutNotify(showControlsGuide);
+        UpdateVolumeText();
+
+        volumeSlider.onValueChanged.RemoveAllListeners();
+        volumeSlider.onValueChanged.AddListener(SetMasterVolume);
+        baitLabelsToggle.onValueChanged.RemoveAllListeners();
+        baitLabelsToggle.onValueChanged.AddListener(SetBaitLabelsVisible);
+        controlsGuideToggle.onValueChanged.RemoveAllListeners();
+        controlsGuideToggle.onValueChanged.AddListener(SetControlsGuideVisible);
+        restartButton.onClick.RemoveAllListeners();
+        restartButton.onClick.AddListener(RestartFromSettings);
+        closeSettingsButton.onClick.RemoveAllListeners();
+        closeSettingsButton.onClick.AddListener(() => SetSettingsPanelVisible(false));
+
+        ApplySettings();
+    }
+
+    private GameObject EnsureSettingsPanel(RectTransform parent)
+    {
+        Transform existing = parent.Find("Settings Panel");
+        GameObject panel = existing != null ? existing.gameObject : new GameObject("Settings Panel", typeof(RectTransform), typeof(Image));
+        panel.transform.SetParent(parent, false);
+
+        RectTransform rect = panel.GetComponent<RectTransform>();
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.anchoredPosition = new Vector2(-24f, -86f);
+        rect.sizeDelta = new Vector2(390f, 330f);
+
+        Image image = panel.GetComponent<Image>();
+        image.sprite = settingsPanelSprite;
+        image.type = settingsPanelSprite != null && settingsPanelSprite.border.sqrMagnitude > 0f ? Image.Type.Sliced : Image.Type.Simple;
+        image.color = Color.white;
+        return panel;
+    }
+
+    private Button EnsureIconButton(Transform parent, string name, Sprite sprite, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject buttonObject = EnsureUiObject(parent, name, typeof(Image), typeof(Button));
+        ConfigureUiRect(buttonObject.transform, anchor, anchoredPosition, size);
+
+        Image image = buttonObject.GetComponent<Image>();
+        image.sprite = sprite;
+        image.type = Image.Type.Simple;
+        image.color = Color.white;
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = image;
+        return button;
+    }
+
+    private Button EnsureTextButton(Transform parent, string name, string label, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject buttonObject = EnsureUiObject(parent, name, typeof(Image), typeof(Button));
+        ConfigureUiRect(buttonObject.transform, anchor, anchoredPosition, size);
+
+        Image image = buttonObject.GetComponent<Image>();
+        image.sprite = settingsPanelSprite;
+        image.type = settingsPanelSprite != null && settingsPanelSprite.border.sqrMagnitude > 0f ? Image.Type.Sliced : Image.Type.Simple;
+        image.color = new Color(0.12f, 0.2f, 0.28f, 0.95f);
+
+        TMP_Text text = EnsureSettingsText(buttonObject.transform, "Label", label, new Vector2(0.5f, 0.5f), Vector2.zero, size - new Vector2(16f, 8f), 22f, TextAlignmentOptions.Center);
+        text.color = Color.white;
+
+        Button button = buttonObject.GetComponent<Button>();
+        button.targetGraphic = image;
+        return button;
+    }
+
+    private Slider EnsureSlider(Transform parent, string name, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject sliderObject = EnsureUiObject(parent, name, typeof(Slider));
+        ConfigureUiRect(sliderObject.transform, anchor, anchoredPosition, size);
+
+        Image background = EnsureChildImage(sliderObject.transform, "Background", new Color(0.08f, 0.1f, 0.13f, 0.95f));
+        ConfigureStretchRect(background.transform, Vector2.zero, Vector2.zero);
+
+        Image fill = EnsureChildImage(sliderObject.transform, "Fill", new Color(0.42f, 0.9f, 1f, 0.95f));
+        ConfigureStretchRect(fill.transform, new Vector2(4f, 7f), new Vector2(-4f, -7f));
+
+        Image handle = EnsureChildImage(sliderObject.transform, "Handle", new Color(1f, 0.9f, 0.28f, 1f));
+        RectTransform handleRect = handle.GetComponent<RectTransform>();
+        handleRect.anchorMin = new Vector2(0.5f, 0.5f);
+        handleRect.anchorMax = new Vector2(0.5f, 0.5f);
+        handleRect.pivot = new Vector2(0.5f, 0.5f);
+        handleRect.anchoredPosition = Vector2.zero;
+        handleRect.sizeDelta = new Vector2(22f, 34f);
+
+        Slider slider = sliderObject.GetComponent<Slider>();
+        slider.minValue = 0f;
+        slider.maxValue = 1f;
+        slider.wholeNumbers = false;
+        slider.direction = Slider.Direction.LeftToRight;
+        slider.fillRect = fill.rectTransform;
+        slider.handleRect = handleRect;
+        slider.targetGraphic = handle;
+        return slider;
+    }
+
+    private Toggle EnsureToggle(Transform parent, string name, string label, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
+    {
+        GameObject toggleObject = EnsureUiObject(parent, name, typeof(Toggle));
+        ConfigureUiRect(toggleObject.transform, anchor, anchoredPosition, size);
+
+        Image box = EnsureChildImage(toggleObject.transform, "Box", new Color(0.08f, 0.1f, 0.13f, 0.95f));
+        RectTransform boxRect = box.GetComponent<RectTransform>();
+        boxRect.anchorMin = new Vector2(0f, 0.5f);
+        boxRect.anchorMax = new Vector2(0f, 0.5f);
+        boxRect.pivot = new Vector2(0f, 0.5f);
+        boxRect.anchoredPosition = Vector2.zero;
+        boxRect.sizeDelta = new Vector2(30f, 30f);
+
+        Image check = EnsureChildImage(toggleObject.transform, "Check", new Color(0.42f, 0.9f, 1f, 1f));
+        RectTransform checkRect = check.GetComponent<RectTransform>();
+        checkRect.anchorMin = new Vector2(0f, 0.5f);
+        checkRect.anchorMax = new Vector2(0f, 0.5f);
+        checkRect.pivot = new Vector2(0f, 0.5f);
+        checkRect.anchoredPosition = new Vector2(6f, 0f);
+        checkRect.sizeDelta = new Vector2(18f, 18f);
+
+        TMP_Text labelText = EnsureSettingsText(toggleObject.transform, "Label", label, new Vector2(0f, 0.5f), new Vector2(44f, 0f), new Vector2(size.x - 44f, 30f), 22f, TextAlignmentOptions.Left);
+        labelText.color = Color.white;
+
+        Toggle toggle = toggleObject.GetComponent<Toggle>();
+        toggle.targetGraphic = box;
+        toggle.graphic = check;
+        return toggle;
+    }
+
+    private TMP_Text EnsureSettingsText(Transform parent, string name, string value, Vector2 anchor, Vector2 anchoredPosition, Vector2 size, float fontSize, TextAlignmentOptions alignment)
+    {
+        Transform existing = parent.Find(name);
+        GameObject textObject = existing != null ? existing.gameObject : new GameObject(name, typeof(RectTransform));
+        textObject.transform.SetParent(parent, false);
+
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
+        if (text == null)
+        {
+            text = textObject.AddComponent<TextMeshProUGUI>();
+        }
+
+        ConfigureUiRect(textObject.transform, anchor, anchoredPosition, size);
+        text.font = TMP_Settings.defaultFontAsset;
+        text.text = value;
+        text.fontSize = fontSize;
+        text.color = Color.white;
+        text.alignment = alignment;
+        text.textWrappingMode = TextWrappingModes.NoWrap;
+        text.richText = true;
+        text.raycastTarget = false;
+        return text;
+    }
+
+    private static Image EnsureChildImage(Transform parent, string name, Color color)
+    {
+        Transform existing = parent.Find(name);
+        GameObject imageObject = existing != null ? existing.gameObject : new GameObject(name, typeof(RectTransform), typeof(Image));
+        imageObject.transform.SetParent(parent, false);
+
+        Image image = imageObject.GetComponent<Image>();
+        image.sprite = null;
+        image.color = color;
+        image.type = Image.Type.Simple;
+        return image;
+    }
+
+    private static GameObject EnsureUiObject(Transform parent, string name, params System.Type[] components)
+    {
+        Transform existing = parent.Find(name);
+        GameObject obj = existing != null ? existing.gameObject : new GameObject(name, typeof(RectTransform));
+        obj.transform.SetParent(parent, false);
+
+        for (int i = 0; i < components.Length; i++)
+        {
+            if (obj.GetComponent(components[i]) == null)
+            {
+                obj.AddComponent(components[i]);
+            }
+        }
+
+        return obj;
+    }
+
+    private static void ConfigureUiRect(Transform transformToConfigure, Vector2 anchor, Vector2 anchoredPosition, Vector2 size)
+    {
+        RectTransform rect = transformToConfigure.GetComponent<RectTransform>();
+        rect.anchorMin = anchor;
+        rect.anchorMax = anchor;
+        rect.pivot = anchor;
+        rect.anchoredPosition = anchoredPosition;
+        rect.sizeDelta = size;
+    }
+
+    private static void ConfigureStretchRect(Transform transformToConfigure, Vector2 offsetMin, Vector2 offsetMax)
+    {
+        RectTransform rect = transformToConfigure.GetComponent<RectTransform>();
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.offsetMin = offsetMin;
+        rect.offsetMax = offsetMax;
+    }
+
+    private void LoadSettings()
+    {
+        settingsVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(VolumePrefKey, 1f));
+        showBaitLabels = PlayerPrefs.GetInt(BaitLabelsPrefKey, 1) == 1;
+        showControlsGuide = PlayerPrefs.GetInt(ControlsGuidePrefKey, 1) == 1;
+    }
+
+    private void ApplySettings()
+    {
+        AudioListener.volume = settingsVolume;
+        BaitPickup.SetLabelsVisible(showBaitLabels);
+
+        if (controlsPanel != null)
+        {
+            controlsPanel.SetActive(showControlsGuide);
+        }
+    }
+
+    private void ToggleSettingsPanel()
+    {
+        SetSettingsPanelVisible(settingsPanel == null || !settingsPanel.activeSelf);
+    }
+
+    private void SetSettingsPanelVisible(bool visible)
+    {
+        if (settingsPanel != null)
+        {
+            settingsPanel.SetActive(visible);
+        }
+    }
+
+    private void SetMasterVolume(float value)
+    {
+        settingsVolume = Mathf.Clamp01(value);
+        PlayerPrefs.SetFloat(VolumePrefKey, settingsVolume);
+        PlayerPrefs.Save();
+        AudioListener.volume = settingsVolume;
+        UpdateVolumeText();
+    }
+
+    private void SetBaitLabelsVisible(bool visible)
+    {
+        showBaitLabels = visible;
+        PlayerPrefs.SetInt(BaitLabelsPrefKey, visible ? 1 : 0);
+        PlayerPrefs.Save();
+        BaitPickup.SetLabelsVisible(visible);
+    }
+
+    private void SetControlsGuideVisible(bool visible)
+    {
+        showControlsGuide = visible;
+        PlayerPrefs.SetInt(ControlsGuidePrefKey, visible ? 1 : 0);
+        PlayerPrefs.Save();
+
+        if (controlsPanel != null)
+        {
+            controlsPanel.SetActive(visible);
+        }
+    }
+
+    private void UpdateVolumeText()
+    {
+        SetText(volumeValueText, Mathf.RoundToInt(settingsVolume * 100f) + "%");
+    }
+
+    private void RestartFromSettings()
+    {
+        FishGameManager manager = FishGameManager.Instance;
+        if (manager != null)
+        {
+            manager.RestartGame();
+        }
+    }
+
+    private static void EnsureEventSystemInputModule()
+    {
+        EventSystem eventSystem = FindFirstObjectByType<EventSystem>();
+        if (eventSystem == null)
+        {
+            eventSystem = new GameObject("EventSystem", typeof(EventSystem)).GetComponent<EventSystem>();
+        }
+
+        if (eventSystem.GetComponent<BaseInputModule>() == null)
+        {
+            eventSystem.gameObject.AddComponent<StandaloneInputModule>();
+        }
+    }
+
     private static TextMeshProUGUI CreateHudText(Transform parent, string name)
     {
         GameObject textObject = new GameObject(name, typeof(RectTransform));
@@ -350,6 +690,45 @@ public class FishUIController : MonoBehaviour
         texture.SetPixels32(pixels);
         texture.Apply();
         return Sprite.Create(texture, new Rect(0, 0, width, height), new Vector2(0.5f, 0.5f), 100f, 1, SpriteMeshType.FullRect, new Vector4(8f, 8f, 8f, 8f));
+    }
+
+    private static Sprite CreateGearSprite()
+    {
+        int size = 64;
+        Color32[] pixels = new Color32[size * size];
+        FillRect(pixels, size, size, 0, 0, size, size, new Color32(0, 0, 0, 0));
+
+        Vector2 center = new Vector2(31.5f, 31.5f);
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = x - center.x;
+                float dy = y - center.y;
+                float radius = Mathf.Sqrt(dx * dx + dy * dy);
+                float angle = Mathf.Atan2(dy, dx);
+                bool tooth = radius >= 20f && radius <= 29f && Mathf.Abs(Mathf.Cos(angle * 4f)) > 0.78f;
+                bool outerRing = radius >= 13f && radius <= 21f;
+                bool hub = radius <= 6f;
+                bool darkCenter = radius <= 3f;
+
+                if (tooth || outerRing || hub)
+                {
+                    pixels[y * size + x] = new Color32(218, 242, 250, 255);
+                }
+
+                if (darkCenter)
+                {
+                    pixels[y * size + x] = new Color32(13, 23, 34, 255);
+                }
+            }
+        }
+
+        Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        texture.filterMode = FilterMode.Point;
+        texture.SetPixels32(pixels);
+        texture.Apply();
+        return Sprite.Create(texture, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f);
     }
 
     private static Sprite CreateAlertSegmentSprite()

@@ -6,6 +6,8 @@ using UnityEngine;
 // Then asks FishGameManager to apply the actual card-like bait effect.
 public class BaitPickup : MonoBehaviour
 {
+    public static bool LabelsVisible { get; private set; } = true;
+
     public FishBaitType baitType = FishBaitType.Worm;
     public SpriteRenderer spriteRenderer;
     public TMP_Text label;
@@ -33,6 +35,16 @@ public class BaitPickup : MonoBehaviour
         }
 
         ApplyLabel();
+    }
+
+    public static void SetLabelsVisible(bool visible)
+    {
+        LabelsVisible = visible;
+        BaitPickup[] baits = FindObjectsByType<BaitPickup>(FindObjectsSortMode.None);
+        for (int i = 0; i < baits.Length; i++)
+        {
+            baits[i].ApplyLabelVisibility();
+        }
     }
 
     public void Configure(FishBaitType type)
@@ -76,6 +88,15 @@ public class BaitPickup : MonoBehaviour
         }
 
         label.text = GetStats(baitType).shortLabel;
+        ApplyLabelVisibility();
+    }
+
+    private void ApplyLabelVisibility()
+    {
+        if (label != null)
+        {
+            label.gameObject.SetActive(LabelsVisible);
+        }
     }
 
     public static FishBaitStats GetStats(FishBaitType type)

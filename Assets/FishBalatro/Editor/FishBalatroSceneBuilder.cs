@@ -139,6 +139,11 @@ public static class FishBalatroSceneBuilder
             StrokeRect(pixels, 62, 28, 4, 4, 52, 18, new Color32(98, 126, 148, 255), 2);
         });
 
+        sprites["ui_gear"] = SaveSprite("ui_gear", 64, 64, pixels =>
+        {
+            DrawGearIcon(pixels, 64, 64);
+        }, UiPixelsPerUnit, Vector4.zero);
+
         sprites["ui_alert_segment"] = SaveSprite("ui_alert_segment", 26, 24, pixels =>
         {
             Rect(pixels, 26, 24, 1, 1, 24, 22, new Color32(92, 26, 34, 255));
@@ -467,7 +472,7 @@ public static class FishBalatroSceneBuilder
         fisherman.fishermanRenderer = bodyObject.GetComponent<SpriteRenderer>();
         fisherman.exclamationText = exclamation;
         fisherman.nameText = name;
-        fisherman.SetVariant(FishFishermanType.Net, 1);
+        fisherman.SetVariant(FishFishermanType.Claw, 1);
         return fisherman;
     }
 
@@ -622,6 +627,7 @@ public static class FishBalatroSceneBuilder
         ui.controlsPanelSprite = sprites["ui_controls_panel"];
         ui.keycapSprite = sprites["ui_keycap"];
         ui.alertSegmentSprite = sprites["ui_alert_segment"];
+        ui.gearButtonSprite = sprites["ui_gear"];
         CreateWorldControlsHint(sprites["ui_controls_panel"], ui, font);
         RectTransform scoreRoot = CreateUiContainer(canvasObject.transform, "Score UI");
         RectTransform alertRoot = CreateUiContainer(canvasObject.transform, "Alert UI");
@@ -652,9 +658,15 @@ public static class FishBalatroSceneBuilder
         ui.netSweepPanel = netPanel;
         netPanel.SetActive(false);
 
-        if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
+        EventSystem eventSystem = UnityEngine.Object.FindFirstObjectByType<EventSystem>();
+        if (eventSystem == null)
         {
-            new GameObject("EventSystem", typeof(EventSystem));
+            eventSystem = new GameObject("EventSystem", typeof(EventSystem)).GetComponent<EventSystem>();
+        }
+
+        if (eventSystem.GetComponent<BaseInputModule>() == null)
+        {
+            eventSystem.gameObject.AddComponent<StandaloneInputModule>();
         }
 
         return ui;
@@ -1017,6 +1029,35 @@ public static class FishBalatroSceneBuilder
         Rect(pixels, width, height, 7, 7, width - 21, height - 21, new Color32(22, 38, 54, 220));
         StrokeRect(pixels, width, height, 1, 1, width - 9, height - 9, new Color32(9, 15, 24, 255), 4);
         StrokeRect(pixels, width, height, 5, 5, width - 17, height - 17, new Color32(49, 75, 96, 255), 3);
+    }
+
+    private static void DrawGearIcon(Color32[] pixels, int width, int height)
+    {
+        Vector2 center = new Vector2((width - 1) * 0.5f, (height - 1) * 0.5f);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                float dx = x - center.x;
+                float dy = y - center.y;
+                float radius = Mathf.Sqrt(dx * dx + dy * dy);
+                float angle = Mathf.Atan2(dy, dx);
+                bool tooth = radius >= 20f && radius <= 29f && Mathf.Abs(Mathf.Cos(angle * 4f)) > 0.78f;
+                bool outerRing = radius >= 13f && radius <= 21f;
+                bool hub = radius <= 6f;
+                bool darkCenter = radius <= 3f;
+
+                if (tooth || outerRing || hub)
+                {
+                    pixels[y * width + x] = new Color32(218, 242, 250, 255);
+                }
+
+                if (darkCenter)
+                {
+                    pixels[y * width + x] = new Color32(13, 23, 34, 255);
+                }
+            }
+        }
     }
 
     private static void StrokeRect(Color32[] pixels, int width, int height, int x, int y, int rectWidth, int rectHeight, Color32 color, int thickness)

@@ -527,9 +527,9 @@ public class FishGameManager : MonoBehaviour
     {
         switch (Mathf.Abs(targetLevel - 1) % 3)
         {
-            case 1:
+            case 0:
                 return FishFishermanType.Claw;
-            case 2:
+            case 1:
                 return FishFishermanType.Electric;
             default:
                 return FishFishermanType.Net;
