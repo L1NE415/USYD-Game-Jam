@@ -143,7 +143,6 @@ public class FishGameManager : MonoBehaviour
         {
             TryCallBigFish();
         }
-
         if (stateMessageTimer > 0f)
         {
             stateMessageTimer -= Time.deltaTime;
