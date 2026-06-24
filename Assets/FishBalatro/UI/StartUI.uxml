@@ -1,0 +1,9 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/FishBalatro/UI/StartUI.uss?fileID=7433441132597879392&amp;guid=b43706cea37ca6146be123183c750239&amp;type=3#StartUI"/>
+    <ui:VisualElement name="menu-panel" class="menu-panel menu-button" style="flex-grow: 1; background-color: rgba(0, 27, 46, 0.447); padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-left-color: rgba(158, 235, 255, 0); border-right-color: rgba(158, 235, 255, 0); border-top-color: rgba(158, 235, 255, 0); border-bottom-color: rgba(158, 235, 255, 0); align-items: center; justify-content: center; width: 1018px; background-image: url(&quot;project://database/Assets/FishBalatro/Art/Generated/water_panel.png?fileID=2800000&amp;guid=aa0811efec3521743a8389ab80e3bb11&amp;type=3#water_panel&quot;); top: auto; position: relative; margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0;">
+        <ui:Label text="Fish Balatro" name="title-label" class="title-label" style="font-size: 30px; color: rgb(255, 255, 255); -unity-font-style: bold; -unity-text-align: middle-center;"/>
+        <ui:Label text="Steal bait from the fisherman" name="subtitle-label" class="subtitle-label"/>
+        <ui:Button text="Start Game" name="start-button" class="menu-button"/>
+        <ui:Button text="Quit Game" name="quit-button" class="menu-button"/>
+    </ui:VisualElement>
+</ui:UXML>
