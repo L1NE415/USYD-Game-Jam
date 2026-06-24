@@ -19,6 +19,7 @@ public class FishPlayerController : MonoBehaviour
     public Vector2 arenaMax = new Vector2(8f, 3.55f);
 
     private Rigidbody2D rb;
+    private Animator animator;
     private Vector2 moveInput;
     private Vector2 dashDirection = Vector2.right;
     private float dashTimer;
@@ -30,6 +31,7 @@ public class FishPlayerController : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
         rb.gravityScale = 0f;
         rb.freezeRotation = true;
 
@@ -52,10 +54,17 @@ public class FishPlayerController : MonoBehaviour
         moveInput = movementLocked ? Vector2.zero : ReadMovementInput();
         if (moveInput.x < 0)
         {
-            gameObject.GetComponent<SpriteRenderer>().flipX = true;
+            GetComponent<SpriteRenderer>().flipX = true;
         } else if (moveInput.x > 0)
         {
-            gameObject.GetComponent<SpriteRenderer>().flipX = false;   
+            GetComponent<SpriteRenderer>().flipX = false;   
+        }
+        if(moveInput.magnitude == 0)
+        {
+            animator.SetBool("Moving", false);
+        } else
+        {
+            animator.SetBool("Moving", true);
         }
         if (moveInput.sqrMagnitude > 1f)
         {
