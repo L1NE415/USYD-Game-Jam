@@ -289,14 +289,14 @@ public static class FishBalatroSceneBuilder
             Line(pixels, width, height, 125, 2, 2, 69, rope);
         });
 
-        sprites["worm"] = SaveSprite("bait_worm", 20, 16, pixels =>
+        sprites["worm"] = SaveExternalBaitSprite("bait_worm", 20, 16, 93f, pixels =>
         {
             Ellipse(pixels, 20, 16, 8, 8, 6, 4, new Color32(236, 120, 92, 255));
             Ellipse(pixels, 20, 16, 13, 8, 5, 4, new Color32(249, 151, 118, 255));
             Rect(pixels, 20, 16, 15, 10, 1, 1, new Color32(40, 24, 24, 255));
         });
 
-        sprites["shrimp"] = SaveSprite("bait_shrimp", 22, 18, pixels =>
+        sprites["shrimp"] = SaveExternalBaitSprite("bait_shrimp", 22, 18, 28f, pixels =>
         {
             Ellipse(pixels, 22, 18, 11, 9, 8, 5, new Color32(255, 124, 102, 255));
             Triangle(pixels, 22, 18, new Vector2Int(4, 9), new Vector2Int(0, 13), new Vector2Int(1, 6), new Color32(255, 176, 138, 255));
@@ -304,21 +304,21 @@ public static class FishBalatroSceneBuilder
             Line(pixels, 22, 18, 15, 6, 20, 1, new Color32(255, 176, 138, 255));
         });
 
-        sprites["glow_bug"] = SaveSprite("bait_glow_bug", 20, 20, pixels =>
+        sprites["glow_bug"] = SaveExternalBaitSprite("bait_glow_bug", 20, 20, 62f, pixels =>
         {
             Ellipse(pixels, 20, 20, 10, 10, 8, 8, new Color32(94, 255, 148, 110));
             Ellipse(pixels, 20, 20, 10, 10, 4, 5, new Color32(165, 255, 132, 255));
             Rect(pixels, 20, 20, 9, 4, 2, 12, new Color32(37, 95, 64, 255));
         });
 
-        sprites["small_fish_bait"] = SaveSprite("bait_small_fish", 26, 16, pixels =>
+        sprites["small_fish_bait"] = SaveExternalBaitSprite("bait_small_fish", 26, 16, 64f, pixels =>
         {
             Triangle(pixels, 26, 16, new Vector2Int(1, 8), new Vector2Int(8, 13), new Vector2Int(8, 3), new Color32(62, 140, 206, 255));
             Ellipse(pixels, 26, 16, 15, 8, 9, 5, new Color32(86, 172, 226, 255));
             Rect(pixels, 26, 16, 21, 9, 2, 2, new Color32(18, 22, 28, 255));
         });
 
-        sprites["golden_shrimp"] = SaveSprite("bait_golden_shrimp", 24, 20, pixels =>
+        sprites["golden_shrimp"] = SaveExternalBaitSprite("bait_golden_shrimp", 24, 20, 25f, pixels =>
         {
             Ellipse(pixels, 24, 20, 12, 10, 9, 5, new Color32(255, 212, 42, 255));
             Triangle(pixels, 24, 20, new Vector2Int(4, 10), new Vector2Int(0, 15), new Vector2Int(1, 5), new Color32(255, 242, 122, 255));
@@ -327,7 +327,7 @@ public static class FishBalatroSceneBuilder
             Rect(pixels, 24, 20, 20, 3, 2, 2, new Color32(255, 255, 210, 255));
         });
 
-        sprites["fake_bait"] = SaveSprite("bait_fake", 22, 18, pixels =>
+        sprites["fake_bait"] = SaveExternalBaitSprite("bait_fake", 22, 18, 69f, pixels =>
         {
             Ellipse(pixels, 22, 18, 11, 9, 8, 5, new Color32(142, 74, 118, 255));
             Rect(pixels, 22, 18, 5, 6, 11, 2, new Color32(71, 34, 62, 255));
@@ -372,7 +372,7 @@ public static class FishBalatroSceneBuilder
         pickup.baitType = type;
         pickup.spriteRenderer = spriteRenderer;
 
-        TextMeshPro label = CreateWorldText("Label", BaitPickup.GetStats(type).shortLabel, new Vector3(0f, -0.72f, 0f), 1.15f, Color.white, 32, root.transform);
+        TextMeshPro label = CreateWorldText("Label", BaitPickup.GetStats(type).shortLabel, new Vector3(0f, -0.72f, 0f), 1.35f, Color.white, 32, root.transform);
         label.rectTransform.sizeDelta = new Vector2(3.2f, 1.4f);
         pickup.label = label;
 
@@ -902,12 +902,22 @@ public static class FishBalatroSceneBuilder
         return SaveSprite(name, width, height, draw, UiPixelsPerUnit, new Vector4(8f, 8f, 8f, 8f));
     }
 
+    private static Sprite SaveExternalBaitSprite(string name, int width, int height, float existingPixelsPerUnit, Action<Color32[]> draw)
+    {
+        return SaveSprite(name, width, height, draw, PixelsPerUnit, existingPixelsPerUnit, Vector4.zero);
+    }
+
     private static Sprite SaveSprite(string name, int width, int height, Action<Color32[]> draw)
     {
         return SaveSprite(name, width, height, draw, PixelsPerUnit, Vector4.zero);
     }
 
     private static Sprite SaveSprite(string name, int width, int height, Action<Color32[]> draw, float pixelsPerUnit, Vector4 spriteBorder)
+    {
+        return SaveSprite(name, width, height, draw, pixelsPerUnit, pixelsPerUnit, spriteBorder);
+    }
+
+    private static Sprite SaveSprite(string name, int width, int height, Action<Color32[]> draw, float generatedPixelsPerUnit, float existingPixelsPerUnit, Vector4 spriteBorder)
     {
         string path = ArtPath + "/" + name + ".png";
         if (File.Exists(path))
@@ -918,7 +928,7 @@ public static class FishBalatroSceneBuilder
             {
                 existingImporter.textureType = TextureImporterType.Sprite;
                 existingImporter.spriteImportMode = SpriteImportMode.Single;
-                existingImporter.spritePixelsPerUnit = pixelsPerUnit;
+                existingImporter.spritePixelsPerUnit = existingPixelsPerUnit;
                 existingImporter.spriteBorder = spriteBorder;
                 existingImporter.filterMode = FilterMode.Point;
                 existingImporter.textureCompression = TextureImporterCompression.Uncompressed;
@@ -953,7 +963,7 @@ public static class FishBalatroSceneBuilder
         TextureImporter importer = (TextureImporter)AssetImporter.GetAtPath(path);
         importer.textureType = TextureImporterType.Sprite;
         importer.spriteImportMode = SpriteImportMode.Single;
-        importer.spritePixelsPerUnit = pixelsPerUnit;
+        importer.spritePixelsPerUnit = generatedPixelsPerUnit;
         importer.spriteBorder = spriteBorder;
         importer.filterMode = FilterMode.Point;
         importer.textureCompression = TextureImporterCompression.Uncompressed;

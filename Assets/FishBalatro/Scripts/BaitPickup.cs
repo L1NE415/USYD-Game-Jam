@@ -55,8 +55,8 @@ public class BaitPickup : MonoBehaviour
             return;
         }
 
-        // Bait can only be eaten during normal swimming. Net sweeps and attack
-        // transitions intentionally ignore pickups.
+        // Bait remains collectable during capture tools so the player can keep
+        // making greedy scoring choices while dodging.
         FishGameManager gameManager = FishGameManager.Instance;
         if (gameManager == null || !gameManager.CanEatBait)
         {

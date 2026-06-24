@@ -54,7 +54,7 @@ public class FishGameManager : MonoBehaviour
     private string comboText = "";
 
     public FishGameState State => state;
-    public bool CanEatBait => state == FishGameState.Normal;
+    public bool CanEatBait => state == FishGameState.Normal || state == FishGameState.FishingHazard;
     public bool CanCallBigFish => state == FishGameState.Normal && totalScore >= AttackCost;
     public int AttackCost => baseAttackCost + (level - 1) * attackCostStep;
     public int TotalScore => totalScore;
