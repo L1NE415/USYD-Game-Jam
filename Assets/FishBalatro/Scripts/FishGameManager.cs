@@ -103,6 +103,8 @@ public class FishGameManager : MonoBehaviour
 
     private void Start()
     {
+        FishAudioManager.EnsureExists().PlayBackgroundMusic();
+
         if (fishingLine != null)
         {
             fishingLine.SetLineVisible(false);
@@ -177,6 +179,8 @@ public class FishGameManager : MonoBehaviour
             return;
         }
 
+        FishAudioManager.PlayCue(FishAudioCue.EatBait);
+
         // Small Fish repeats the previous effect, so we remember the effect that
         // should be copied next time.
         FishBaitType memoryType = bait.baitType;
@@ -221,6 +225,7 @@ public class FishGameManager : MonoBehaviour
         ResetRunState();
         statusText = "ATTACK! -" + cost + " score";
         comboText = "";
+        FishAudioManager.PlayCue(FishAudioCue.SharkRoar);
 
         if (baitSpawner != null)
         {
@@ -400,6 +405,7 @@ public class FishGameManager : MonoBehaviour
                 {
                     clawShot = ClawShotHazard.CreateRuntimeClaw();
                 }
+                FishAudioManager.PlayCaptureToolCue(FishFishermanType.Claw);
                 yield return clawShot.PlayVolley(player, level);
                 break;
             case FishFishermanType.Electric:
@@ -417,6 +423,7 @@ public class FishGameManager : MonoBehaviour
                 {
                     netSweep = NetSweepHazard.CreateRuntimeNet();
                 }
+                FishAudioManager.PlayCaptureToolCue(FishFishermanType.Net);
                 yield return netSweep.PlaySweep(player, level);
                 break;
         }
@@ -447,6 +454,7 @@ public class FishGameManager : MonoBehaviour
     private void CatchFish()
     {
         state = FishGameState.Caught;
+        FishAudioManager.PlayCue(FishAudioCue.FishDie);
         HighScoreController.AddScore(TotalScore);
         //statusText = "CAUGHT BY THE " + CaptureToolName.ToUpperInvariant() + "! Press R to restart.";
         //comboText = "Final score: " + totalScore;

@@ -77,6 +77,7 @@ public class ElectricWaveHazard : MonoBehaviour
             }
 
             ConfigureLine(line, y, activeColor, activeWidth);
+            FishAudioManager.PlayCue(FishAudioCue.LaserLevel2);
 
             elapsed = 0f;
             while (elapsed < tunedActiveSeconds)

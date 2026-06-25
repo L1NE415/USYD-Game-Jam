@@ -11,16 +11,18 @@ public enum FishDifficulty
 // gameplay scripts read the multipliers so the menu actually changes the run.
 public static class FishGameSettings
 {
-    private const string LegacyVolumePrefKey = "FishBalatro.Settings.Volume";
     private const string MusicVolumePrefKey = "FishBalatro.Settings.MusicVolume";
     private const string SfxVolumePrefKey = "FishBalatro.Settings.SfxVolume";
     private const string UiScalePrefKey = "FishBalatro.Settings.UiScale";
     private const string DifficultyPrefKey = "FishBalatro.Settings.Difficulty";
+    private const string AudioDefaultsVersionPrefKey = "FishBalatro.Settings.AudioDefaultsVersion";
+    private const float DefaultVolume = 0.5f;
+    private const int AudioDefaultsVersion = 1;
 
     private static bool loaded;
 
-    public static float MusicVolume { get; private set; } = 1f;
-    public static float SfxVolume { get; private set; } = 1f;
+    public static float MusicVolume { get; private set; } = DefaultVolume;
+    public static float SfxVolume { get; private set; } = DefaultVolume;
     public static float UiScale { get; private set; } = 1f;
     public static FishDifficulty Difficulty { get; private set; } = FishDifficulty.Normal;
 
@@ -99,8 +101,9 @@ public static class FishGameSettings
             return;
         }
 
-        MusicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumePrefKey, PlayerPrefs.GetFloat(LegacyVolumePrefKey, 1f)));
-        SfxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(SfxVolumePrefKey, 1f));
+        ApplyAudioDefaultMigration();
+        MusicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(MusicVolumePrefKey, DefaultVolume));
+        SfxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(SfxVolumePrefKey, DefaultVolume));
         UiScale = Mathf.Clamp(PlayerPrefs.GetFloat(UiScalePrefKey, 1f), 0.85f, 1.25f);
         Difficulty = (FishDifficulty)Mathf.Clamp(PlayerPrefs.GetInt(DifficultyPrefKey, (int)FishDifficulty.Normal), 0, 2);
         loaded = true;
@@ -157,8 +160,29 @@ public static class FishGameSettings
 
     private static void ApplyAudioFallback()
     {
-        // Until the project has separate AudioMixer groups, keep both sliders
-        // meaningful by using the loudest channel as the global listener volume.
-        AudioListener.volume = Mathf.Max(MusicVolume, SfxVolume);
+        // FishAudioManager applies the separate music/SFX sliders at source
+        // level, so keep the listener neutral and avoid double-scaling volume.
+        AudioListener.volume = 1f;
+    }
+
+    private static void ApplyAudioDefaultMigration()
+    {
+        if (PlayerPrefs.GetInt(AudioDefaultsVersionPrefKey, 0) >= AudioDefaultsVersion)
+        {
+            return;
+        }
+
+        if (!PlayerPrefs.HasKey(MusicVolumePrefKey) || Mathf.Approximately(PlayerPrefs.GetFloat(MusicVolumePrefKey), 1f))
+        {
+            PlayerPrefs.SetFloat(MusicVolumePrefKey, DefaultVolume);
+        }
+
+        if (!PlayerPrefs.HasKey(SfxVolumePrefKey) || Mathf.Approximately(PlayerPrefs.GetFloat(SfxVolumePrefKey), 1f))
+        {
+            PlayerPrefs.SetFloat(SfxVolumePrefKey, DefaultVolume);
+        }
+
+        PlayerPrefs.SetInt(AudioDefaultsVersionPrefKey, AudioDefaultsVersion);
+        PlayerPrefs.Save();
     }
 }

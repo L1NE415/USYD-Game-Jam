@@ -92,6 +92,8 @@ public class FishPlayerController : MonoBehaviour
             moveInput.Normalize();
         }
 
+        FishAudioManager.SetPlayerSwimming(!movementLocked && moveInput.sqrMagnitude > 0.05f);
+
         if (moveInput.sqrMagnitude > 0.05f)
         {
             dashDirection = moveInput.normalized;
