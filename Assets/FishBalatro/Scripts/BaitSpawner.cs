@@ -21,6 +21,7 @@ public class BaitSpawner : MonoBehaviour
     public int baitBudgetPerLevel = 3;
     public int maxLevelBaitBudget = 24;
     public int emergencyBaitBudget = 4;
+    public bool failed = false;
 
     private readonly List<BaitPickup> activeBaits = new List<BaitPickup>();
     private float spawnTimer;
@@ -41,7 +42,13 @@ public class BaitSpawner : MonoBehaviour
 
         EnsureBudgetForCurrentLevel();
 
-        spawnTimer -= Time.deltaTime;
+        if (spawnedThisLevel >= levelBaitBudget && gameManager.TotalScore < gameManager.AttackCost && emergencyBudgetUsed && !failed)
+        {
+            failed = true;
+            gameManager.EndGame();
+        }
+
+            spawnTimer -= Time.deltaTime;
         int targetActiveBaits = GetTargetActiveBaits();
         AddEmergencyBudgetIfNeeded();
 

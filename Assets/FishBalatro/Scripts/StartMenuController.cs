@@ -48,4 +48,14 @@ public class MainMenuController : MonoBehaviour
         Application.Quit();
 #endif
     }
+
+    public void ShowMenu()
+    {
+        root.style.display = DisplayStyle.Flex;
+    }
+
+    public void HideMenu()
+    {
+        root.style.display = DisplayStyle.None;
+    }
 }

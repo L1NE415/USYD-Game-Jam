@@ -12,7 +12,9 @@ public class HighScoreController : MonoBehaviour
     [SerializeField] private UIDocument uiDocument;
 
     [Header("Return Target")]
-    [SerializeField] private QuitMenuController quitMenuUI;
+    [SerializeField] public QuitMenuController lastQuitMenuUI;
+
+    [SerializeField] public WinMenuController lastWinMenuUI;
 
     private VisualElement root;
 
@@ -118,9 +120,13 @@ public class HighScoreController : MonoBehaviour
     {
         Hide();
 
-        if (quitMenuUI != null)
+        if (lastQuitMenuUI != null)
         {
-            quitMenuUI.Show();
+            lastQuitMenuUI.Show();
+        }
+        else if(lastWinMenuUI != null)
+        {
+            lastWinMenuUI.Show();
         }
 
     }

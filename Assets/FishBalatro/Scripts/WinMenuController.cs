@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.UIElements;
 using static UnityEngine.Rendering.DebugUI;
 
-public class QuitMenuController : MonoBehaviour
+public class WinMenuController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
 
@@ -68,16 +68,8 @@ public class QuitMenuController : MonoBehaviour
 
     private void Update()
     {
-        if(fishPlayerController.gameManager.State == FishGameState.Caught)
+        if(fishPlayerController.gameManager.State == FishGameState.Victory)
         {
-            titleLabel.text = "You were caught!";
-            subtitleLabel.text = "Your Score: " + game.TotalScore;
-            root.style.display = DisplayStyle.Flex;
-            isShowing = true;
-        }
-        else if (baitSpawner.failed)
-        {
-            titleLabel.text = "You failed to reach the target score!";
             subtitleLabel.text = "Your Score: " + game.TotalScore;
             root.style.display = DisplayStyle.Flex;
             isShowing = true;
@@ -92,7 +84,7 @@ public class QuitMenuController : MonoBehaviour
     private void OnScoreClicked()
     {
         root.style.display = DisplayStyle.None;
-        scoreMenuUI.lastQuitMenuUI = this;
+        scoreMenuUI.lastWinMenuUI = this;
         scoreMenuUI.Show();
     }
 
