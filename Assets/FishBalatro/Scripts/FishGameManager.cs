@@ -46,6 +46,7 @@ public class FishGameManager : MonoBehaviour
     private FishGameState state = FishGameState.Normal;
     private int totalScore;
     private int currentRunScore;
+    private int finalScore;
     private int multiplier = 1;
     private int nextBaitMultiplier = 1;
     private int level = 1;
@@ -62,6 +63,7 @@ public class FishGameManager : MonoBehaviour
     public bool CanCallBigFish => state == FishGameState.Normal && totalScore >= AttackCost;
     public int AttackCost => IsBossLevel ? bossAttackCost : baseAttackCost + (level - 1) * attackCostStep;
     public int TotalScore => totalScore;
+    public int FinalScore => finalScore;
     public int CurrentRunScore => currentRunScore;
     public int Multiplier => multiplier;
     public int NextBaitMultiplier => nextBaitMultiplier;
@@ -491,7 +493,10 @@ public class FishGameManager : MonoBehaviour
 
     private void WinGame(int finalAttackCost)
     {
-        HighScoreController.AddScore(TotalScore);
+        if (FishGameSettings.Difficulty == FishDifficulty.Easy) finalScore = (int)(TotalScore * 0.7);
+        if (FishGameSettings.Difficulty == FishDifficulty.Normal) finalScore = (int)(TotalScore * 1);
+        if (FishGameSettings.Difficulty == FishDifficulty.Hard) finalScore = (int)(TotalScore * 1.3);
+        HighScoreController.AddScore(finalScore);
         state = FishGameState.Victory;
         //statusText = "COMMERCIAL SHIP DEFEATED! You cleared the jam build.";
         //comboText = "Final score: " + totalScore + " | Final attack cost paid: " + finalAttackCost;

@@ -8,9 +8,9 @@ public class PauseMenuController : MonoBehaviour
     [SerializeField] private UIDocument uiDocument;
 
     [Header("Scene")]
-    [SerializeField] private string mainMenuSceneName = "MainMenuScene";
-
     [SerializeField] private QuitMenuController quitMenu;
+    [SerializeField] private WinMenuController winMenu;
+    [SerializeField] private HighScoreController scoreMenu;
 
     private VisualElement root;
     private Button resumeButton;
@@ -63,7 +63,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
-        if (quitMenu != null && quitMenu.IsShowing)
+        if ((quitMenu != null && quitMenu.IsShowing) || (winMenu != null && winMenu.IsShowing) || (scoreMenu != null && scoreMenu.IsShowing))
         {
             return;
         }

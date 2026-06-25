@@ -21,6 +21,7 @@ public class BaitSpawner : MonoBehaviour
     public int baitBudgetPerLevel = 3;
     public int maxLevelBaitBudget = 24;
     public int emergencyBaitBudget = 4;
+    public int endGameBaitNum;
     public bool failed = false;
 
     private readonly List<BaitPickup> activeBaits = new List<BaitPickup>();
@@ -42,7 +43,13 @@ public class BaitSpawner : MonoBehaviour
 
         EnsureBudgetForCurrentLevel();
 
-        if (spawnedThisLevel >= levelBaitBudget && gameManager.TotalScore < gameManager.AttackCost && emergencyBudgetUsed && !failed)
+        //if (Input.GetKeyDown(KeyCode.Y))
+        //{
+        //    Debug.Log(spawnedThisLevel + "  " + levelBaitBudget + "  " + endGameBaitNum);
+        //}
+
+        if (activeBaits.Count == 0 && spawnedThisLevel == endGameBaitNum 
+            && gameManager.TotalScore < gameManager.AttackCost && !failed)
         {
             failed = true;
             gameManager.EndGame();
@@ -101,6 +108,7 @@ public class BaitSpawner : MonoBehaviour
         budgetLevel = level;
         int tunedBudget = baseLevelBaitBudget + (level - 1) * baitBudgetPerLevel + FishGameSettings.BaitBudgetBonus;
         levelBaitBudget = Mathf.Clamp(tunedBudget, 8, maxLevelBaitBudget);
+        endGameBaitNum = levelBaitBudget + emergencyBaitBudget;
         spawnedThisLevel = 0;
         emergencyBudgetUsed = false;
     }
@@ -137,6 +145,7 @@ public class BaitSpawner : MonoBehaviour
             emergencyBudgetUsed = true;
             spawnTimer = 0f;
             gameManager.StatusText = "Only a few risky scraps remain.";
+            //Debug.Log("Only a few risky scraps remain.");
         }
     }
 

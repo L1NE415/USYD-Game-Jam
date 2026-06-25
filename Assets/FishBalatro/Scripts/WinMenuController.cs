@@ -66,7 +66,7 @@ public class WinMenuController : MonoBehaviour
     {
         if (fishPlayerController.gameManager.State == FishGameState.Victory)
         {
-            subtitleLabel.text = "Your Score: " + game.TotalScore;
+            subtitleLabel.text = "Your Score: " + game.FinalScore;
             root.style.display = DisplayStyle.Flex;
             isShowing = true;
         }
