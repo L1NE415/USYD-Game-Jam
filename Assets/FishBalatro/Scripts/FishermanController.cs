@@ -84,7 +84,7 @@ public class FishermanController : MonoBehaviour
     {
         EnsureVariantEntities();
         Variant = variant;
-        homeColor = GetVariantColor(variant);
+        homeColor = Color.white;
         activeEntity = GetEntity(variant);
         SetOnlyActiveEntity(activeEntity);
         CopyActiveEntityToLegacyFields(activeEntity);
@@ -96,9 +96,7 @@ public class FishermanController : MonoBehaviour
 
         if (activeEntity != null && activeEntity.boatRenderer != null)
         {
-            // Keep the boat shape the same while adding a slight tint so the
-            // whole rig reads as a different fisherman type.
-            activeEntity.boatRenderer.color = reelWarning ? new Color(1f, 0.45f, 0.35f) : Color.Lerp(Color.white, homeColor, 0.18f);
+            activeEntity.boatRenderer.color = reelWarning ? new Color(1f, 0.45f, 0.35f) : Color.white;
         }
 
         if (activeEntity != null && activeEntity.nameText != null)
@@ -131,7 +129,7 @@ public class FishermanController : MonoBehaviour
         FishermanVariantEntity entity = activeEntity ?? GetEntity(Variant);
         if (entity != null && entity.boatRenderer != null)
         {
-            entity.boatRenderer.color = warning ? new Color(1f, 0.45f, 0.35f) : Color.Lerp(Color.white, homeColor, 0.18f);
+            entity.boatRenderer.color = warning ? new Color(1f, 0.45f, 0.35f) : Color.white;
         }
     }
 
@@ -229,8 +227,9 @@ public class FishermanController : MonoBehaviour
         entity.root.transform.localRotation = Quaternion.identity;
         entity.root.transform.localScale = Vector3.one;
 
-        changed |= EnsureVariantSprite(ref entity.boatRenderer, entity.root.transform, "Boat", new Vector3(0f, 0f, 0f), boatSprite, 10, Color.Lerp(Color.white, GetVariantColor(type), 0.18f));
-        changed |= EnsureVariantSprite(ref entity.fishermanRenderer, entity.root.transform, "Fisherman Body", new Vector3(0.38f, 0.68f, 0f), bodySprite, 12, GetVariantColor(type));
+        GetVariantArtLayout(type, out Vector3 boatPosition, out Vector3 boatScale, out Vector3 bodyPosition, out Vector3 bodyScale);
+        changed |= EnsureVariantSprite(ref entity.boatRenderer, entity.root.transform, "Boat", boatPosition, boatScale, boatSprite, 10, Color.white);
+        changed |= EnsureVariantSprite(ref entity.fishermanRenderer, entity.root.transform, "Fisherman Body", bodyPosition, bodyScale, bodySprite, 12, Color.white);
         changed |= EnsureMarker(ref entity.lineAnchor, entity.root.transform, "Line Anchor", new Vector3(1.25f, 0.22f, 0f));
         changed |= EnsureMarker(ref entity.toolPropAnchor, entity.root.transform, GetToolPropName(type), new Vector3(0.72f, 0.66f, 0f));
         changed |= EnsureText(ref entity.exclamationText, entity.root.transform, "Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70);
@@ -238,9 +237,6 @@ public class FishermanController : MonoBehaviour
 
         if (type == FishFishermanType.Boss)
         {
-            entity.boatRenderer.transform.localScale = new Vector3(1.45f, 1.18f, 1f);
-            entity.fishermanRenderer.transform.localPosition = new Vector3(0.42f, 0.88f, 0f);
-            entity.fishermanRenderer.transform.localScale = new Vector3(1.08f, 1.08f, 1f);
             entity.lineAnchor.localPosition = new Vector3(1.75f, 0.3f, 0f);
             entity.toolPropAnchor.localPosition = new Vector3(1.05f, 0.78f, 0f);
             entity.exclamationText.transform.localPosition = new Vector3(0.62f, 1.72f, 0f);
@@ -250,7 +246,33 @@ public class FishermanController : MonoBehaviour
         return changed;
     }
 
-    private static bool EnsureVariantSprite(ref SpriteRenderer renderer, Transform parent, string name, Vector3 localPosition, Sprite sprite, int sortingOrder, Color color)
+    private static void GetVariantArtLayout(FishFishermanType type, out Vector3 boatPosition, out Vector3 boatScale, out Vector3 bodyPosition, out Vector3 bodyScale)
+    {
+        boatPosition = new Vector3(0.01f, -0.19f, 0f);
+        boatScale = new Vector3(1.45f, 1.45f, 1f);
+
+        switch (type)
+        {
+            case FishFishermanType.Claw:
+                bodyPosition = new Vector3(0.3f, -0.26f, 0f);
+                bodyScale = new Vector3(0.5f, 0.5f, 1f);
+                break;
+            case FishFishermanType.Net:
+                bodyPosition = new Vector3(0.32f, -0.24f, 0f);
+                bodyScale = new Vector3(0.5396187f, 0.5491247f, 1f);
+                break;
+            case FishFishermanType.Boss:
+                bodyPosition = new Vector3(0.32f, -0.3f, 0f);
+                bodyScale = new Vector3(0.78f, 0.78f, 1f);
+                break;
+            default:
+                bodyPosition = new Vector3(0.29f, -0.19f, 0f);
+                bodyScale = new Vector3(1f, 1f, 1f);
+                break;
+        }
+    }
+
+    private static bool EnsureVariantSprite(ref SpriteRenderer renderer, Transform parent, string name, Vector3 localPosition, Vector3 localScale, Sprite sprite, int sortingOrder, Color color)
     {
         bool changed = false;
         if (renderer == null)
@@ -274,7 +296,7 @@ public class FishermanController : MonoBehaviour
 
         renderer.transform.localPosition = localPosition;
         renderer.transform.localRotation = Quaternion.identity;
-        renderer.transform.localScale = Vector3.one;
+        renderer.transform.localScale = localScale;
         renderer.sortingOrder = sortingOrder;
         renderer.color = color;
         if (renderer.sprite == null && sprite != null)

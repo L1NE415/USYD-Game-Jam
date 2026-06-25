@@ -424,7 +424,10 @@ public class FishGameManager : MonoBehaviour
                     netSweep = NetSweepHazard.CreateRuntimeNet();
                 }
                 FishAudioManager.PlayCaptureToolCue(FishFishermanType.Net);
-                yield return netSweep.PlaySweep(player, level);
+                Vector3 castOrigin = fisherman != null && fisherman.idleTackleVisual != null
+                    ? fisherman.idleTackleVisual.position
+                    : netSweep.transform.position;
+                yield return netSweep.PlaySweep(player, level, castOrigin);
                 break;
         }
     }

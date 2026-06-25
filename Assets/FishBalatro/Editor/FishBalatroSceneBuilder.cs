@@ -580,11 +580,34 @@ public static class FishBalatroSceneBuilder
         variantRoot.transform.localPosition = Vector3.zero;
 
         Color typeColor = GetFishermanVariantColor(type);
-        GameObject boatObject = CreateSpriteObject("Boat", sprites["boat"], new Vector3(0f, 0f, 0f), Vector3.one, 10, variantRoot.transform, Color.Lerp(Color.white, typeColor, 0.18f));
-        boatObject.transform.localPosition = new Vector3(0f, 0f, 0f);
+        GameObject boatObject = CreateSpriteObject("Boat", sprites["boat"], new Vector3(0.01f, -0.19f, 0f), new Vector3(1.45f, 1.45f, 1f), 10, variantRoot.transform, Color.white);
+        boatObject.transform.localPosition = new Vector3(0.01f, -0.19f, 0f);
 
-        GameObject bodyObject = CreateSpriteObject("Fisherman Body", sprites["fisherman"], new Vector3(0.38f, 0.68f, 0f), Vector3.one, 12, variantRoot.transform, typeColor);
-        bodyObject.transform.localPosition = new Vector3(0.38f, 0.68f, 0f);
+        Vector3 bodyPosition = new Vector3(0.32f, -0.28f, 0f);
+        Vector3 bodyScale = new Vector3(0.76f, 0.76f, 1f);
+        if (type == FishFishermanType.Claw)
+        {
+            bodyPosition = new Vector3(0.3f, -0.26f, 0f);
+            bodyScale = new Vector3(0.5f, 0.5f, 1f);
+        }
+        else if (type == FishFishermanType.Net)
+        {
+            bodyPosition = new Vector3(0.32f, -0.24f, 0f);
+            bodyScale = new Vector3(0.5396187f, 0.5491247f, 1f);
+        }
+        else if (type == FishFishermanType.Boss)
+        {
+            bodyPosition = new Vector3(0.32f, -0.3f, 0f);
+            bodyScale = new Vector3(0.78f, 0.78f, 1f);
+        }
+        else if (type == FishFishermanType.Electric)
+        {
+            bodyPosition = new Vector3(0.29f, -0.19f, 0f);
+            bodyScale = new Vector3(1f, 1f, 1f);
+        }
+
+        GameObject bodyObject = CreateSpriteObject("Fisherman Body", sprites["fisherman"], bodyPosition, bodyScale, 12, variantRoot.transform, Color.white);
+        bodyObject.transform.localPosition = bodyPosition;
 
         Transform anchor = CreateMarker("Line Anchor", new Vector3(1.25f, 0.22f, 0f), variantRoot.transform);
         Transform toolProp = CreateMarker(GetFishermanToolPropName(type), new Vector3(0.72f, 0.66f, 0f), variantRoot.transform);
@@ -598,9 +621,6 @@ public static class FishBalatroSceneBuilder
 
         if (type == FishFishermanType.Boss)
         {
-            boatObject.transform.localScale = new Vector3(1.45f, 1.18f, 1f);
-            bodyObject.transform.localPosition = new Vector3(0.42f, 0.88f, 0f);
-            bodyObject.transform.localScale = new Vector3(1.08f, 1.08f, 1f);
             anchor.localPosition = new Vector3(1.75f, 0.3f, 0f);
             toolProp.localPosition = new Vector3(1.05f, 0.78f, 0f);
             exclamation.transform.localPosition = new Vector3(0.62f, 1.72f, 0f);
@@ -696,12 +716,17 @@ public static class FishBalatroSceneBuilder
         netObject.transform.SetParent(parent, false);
         NetSweepHazard netSweep = netObject.AddComponent<NetSweepHazard>();
         netSweep.pivotPosition = new Vector3(0f, 3.7f, 0f);
-        netSweep.netSize = new Vector2(8f, 4.5f);
-        netSweep.netLocalOffset = new Vector2(0f, -3.9f);
-        netSweep.swingAngle = 62f;
-        netSweep.warningSeconds = 0.7f;
-        netSweep.sweepSeconds = 3.1f;
-        netSweep.recoverSeconds = 0.25f;
+        netSweep.netSize = new Vector2(3.2f, 3.2f);
+        netSweep.netLocalOffset = new Vector2(0.1f, -2.3f);
+        netSweep.castStartLocalOffset = new Vector2(0.05f, -0.15f);
+        netSweep.minCatchSize = new Vector2(0.8f, 0.8f);
+        netSweep.visualStartScale = new Vector2(0.35f, 0.35f);
+        netSweep.visualEndScale = Vector2.one;
+        netSweep.levelThreeSizeMultiplier = 1f;
+        netSweep.warningSeconds = 0.45f;
+        netSweep.sweepSeconds = 0.95f;
+        netSweep.lingerSeconds = 0.45f;
+        netSweep.recoverSeconds = 0.15f;
         netSweep.netSprite = netSprite;
 
         GameObject netSpriteObject = CreateSpriteObject("Net Sprite", netSprite, netSweep.netLocalOffset, Vector3.one, netSweep.sortingOrder, netObject.transform, new Color(0.62f, 0.95f, 1f, 0.86f));
