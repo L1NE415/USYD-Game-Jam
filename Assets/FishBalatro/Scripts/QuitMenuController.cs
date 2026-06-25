@@ -25,6 +25,9 @@ public class QuitMenuController : MonoBehaviour
     private Label subtitleLabel;
     private VisualElement root;
 
+    private bool isShowing;
+    public bool IsShowing => isShowing;
+
     private void Awake()
     {
         if (game == null)
@@ -41,6 +44,8 @@ public class QuitMenuController : MonoBehaviour
         {
             fishPlayerController = FindObjectOfType<FishPlayerController>();
         }
+
+        isShowing = false;
     }
 
     private void OnEnable()
@@ -77,6 +82,7 @@ public class QuitMenuController : MonoBehaviour
         {
             subtitleLabel.text = "Your Score: " + game.TotalScore;
             root.style.display = DisplayStyle.Flex;
+            isShowing = true;
         }
     }
 

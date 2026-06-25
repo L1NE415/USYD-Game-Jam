@@ -10,7 +10,7 @@ public class PauseMenuController : MonoBehaviour
     [Header("Scene")]
     [SerializeField] private string mainMenuSceneName = "MainMenuScene";
 
-    [SerializeField] private HighScoreController highScoreController;
+    [SerializeField] private QuitMenuController quitMenu;
 
     private VisualElement root;
     private Button resumeButton;
@@ -53,7 +53,7 @@ public class PauseMenuController : MonoBehaviour
 
     private void Update()
     {
-        if (highScoreController != null && highScoreController.IsShowing)
+        if (quitMenu != null && quitMenu.IsShowing)
         {
             return;
         }

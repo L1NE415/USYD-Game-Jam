@@ -26,7 +26,6 @@ public class HighScoreController : MonoBehaviour
     private UnityEngine.UIElements.Button clearButton;
 
     private bool isShowing;
-
     public bool IsShowing => isShowing;
 
     private const int MaxScores = 5;

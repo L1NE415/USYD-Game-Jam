@@ -1,0 +1,11 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/FishBalatro/UI/Intro.uss?fileID=7433441132597879392&amp;guid=57cef69b5734a1a46a5c1c961741bb30&amp;type=3#Intro"/>
+    <ui:VisualElement style="flex-grow: 1; background-image: url(&quot;project://database/Assets/FishBalatro/Art/Backgrounds/Intro_2.png?fileID=2800000&amp;guid=90ce7a4453eb0944588b2c2c779ef69d&amp;type=3#Intro_2&quot;); flex-direction: column; align-self: auto; justify-content: center;">
+        <ui:VisualElement name="VisualElement" style="flex-grow: 1; height: auto; aspect-ratio: auto; align-self: center; justify-content: flex-start; align-items: stretch; margin-bottom: 500px; margin-top: 8px; top: 502px; padding-top: -30px; padding-bottom: 310px;">
+            <ui:Button text="" name="next-button" style="align-self: center; background-image: url(&quot;project://database/Assets/FishBalatro/Art/Generated/arrow.png?fileID=2800000&amp;guid=cfc79a95ed94961419bff609d6054177&amp;type=3#arrow&quot;); background-color: rgba(58, 121, 187, 0); width: 60px; left: 0; position: relative; border-bottom-width: 0; border-left-width: 0; border-top-width: 0; border-right-width: 0; height: 40px; top: 0; justify-content: flex-start; align-items: stretch;"/>
+            <ui:VisualElement name="subtitle-panel" style="flex-grow: 1; flex-direction: row; height: 50px; align-self: flex-end; background-color: rgba(0, 0, 0, 0.725); align-items: flex-end; justify-content: center; align-content: flex-start;">
+                <ui:Label text="The villagers say that if you follow the sea breeze and the waves, you will find fortune." name="subtitie-label" style="justify-content: center; align-self: center; align-content: flex-start; color: rgb(255, 255, 255); -unity-font-definition: url(&quot;project://database/Assets/FishBalatro/Font/Gokart%20Bubble.otf?fileID=12800000&amp;guid=e6d6d07800124b044a57838787715a6d&amp;type=3#Gokart Bubble&quot;); font-size: 20px; white-space: normal;"/>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

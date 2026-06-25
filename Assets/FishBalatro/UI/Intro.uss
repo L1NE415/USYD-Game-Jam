@@ -1,0 +1,9 @@
+#next-button:hover {
+    -unity-background-image-tint-color: rgb(255, 190, 80);
+
+}
+
+#next-button:active {
+    -unity-background-image-tint-color: rgb(255, 245, 160);
+
+}

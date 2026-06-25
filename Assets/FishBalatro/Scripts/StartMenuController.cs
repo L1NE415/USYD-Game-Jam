@@ -8,18 +8,22 @@ public class MainMenuController : MonoBehaviour
 
     [SerializeField] private string gameSceneName = "GameScene";
 
+    public VisualElement root;
+
     private Button startButton;
     private Button quitButton;
 
     private void OnEnable()
     {
-        var root = uiDocument.rootVisualElement;
+        root = uiDocument.rootVisualElement;
 
         startButton = root.Q<Button>("start-button");
         quitButton = root.Q<Button>("quit-button");
 
         startButton.clicked += OnStartClicked;
         quitButton.clicked += OnQuitClicked;
+
+        root.style.display = DisplayStyle.None;
     }
 
     private void OnDisable()
