@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// Electric fisherman hazard. Horizontal electric lines activate from the upper
+// Electric fisherman hazard. Horizontal electric waves activate from the upper
 // water downward, leaving fish-sized gaps between each layer.
 public class ElectricWaveHazard : MonoBehaviour
 {
@@ -15,8 +15,12 @@ public class ElectricWaveHazard : MonoBehaviour
     public float activeSeconds = 0.35f;
     public float afterWaveSeconds = 0.18f;
     public int sortingOrder = 47;
+    public GameObject wavePrefab;
+    public Vector3 waveVisualScale = new Vector3(1f, 0.55f, 1f);
 
     private readonly List<LineRenderer> waveLines = new List<LineRenderer>();
+    private readonly List<Transform> waveAnchors = new List<Transform>();
+    private readonly List<GameObject> waveVisuals = new List<GameObject>();
     private bool isPlaying;
 
     public bool CaughtPlayer { get; private set; }
@@ -45,9 +49,8 @@ public class ElectricWaveHazard : MonoBehaviour
         Progress = 0f;
 
         int waveCount = Mathf.Max(1, Mathf.FloorToInt((topY - bottomY) / waveSpacing) + 1);
-        CollectExistingWaveLines();
-        EnsureLineCount(waveCount);
-        HideLines();
+        EnsureWaveVisualCount(waveCount);
+        HideWaveVisuals();
 
         Collider2D playerCollider = player != null ? player.GetComponent<Collider2D>() : null;
         float durationMultiplier = FishGameSettings.ToolDurationMultiplier;
@@ -65,8 +68,8 @@ public class ElectricWaveHazard : MonoBehaviour
         for (int i = 0; i < waveCount; i++)
         {
             float y = topY - i * waveSpacing;
-            LineRenderer line = waveLines[i];
-            ConfigureLine(line, y, warningColor, warningWidth);
+            GameObject waveVisual = waveVisuals[i];
+            ConfigureWaveVisual(waveVisual, y, warningColor, warningWidth, false);
 
             float elapsed = 0f;
             while (elapsed < tunedWarningSeconds)
@@ -76,7 +79,7 @@ public class ElectricWaveHazard : MonoBehaviour
                 yield return null;
             }
 
-            ConfigureLine(line, y, activeColor, activeWidth);
+            ConfigureWaveVisual(waveVisual, y, activeColor, activeWidth, true);
             FishAudioManager.PlayCue(FishAudioCue.LaserLevel2);
 
             elapsed = 0f;
@@ -89,14 +92,14 @@ public class ElectricWaveHazard : MonoBehaviour
                 {
                     CaughtPlayer = true;
                     Progress = 1f;
-                    ConfigureLine(line, y, caughtColor, caughtWidth);
+                    ConfigureWaveVisual(waveVisual, y, caughtColor, caughtWidth, true);
                     yield break;
                 }
 
                 yield return null;
             }
 
-            ConfigureLine(line, y, fadingColor, warningWidth);
+            ConfigureWaveVisual(waveVisual, y, fadingColor, warningWidth, false);
             yield return new WaitForSeconds(tunedAfterWaveSeconds);
         }
 
@@ -107,7 +110,7 @@ public class ElectricWaveHazard : MonoBehaviour
     {
         isPlaying = false;
         Progress = 0f;
-        HideLines();
+        HideWaveVisuals();
         gameObject.SetActive(false);
     }
 
@@ -152,6 +155,145 @@ public class ElectricWaveHazard : MonoBehaviour
             }
 
             waveLines.Add(line);
+        }
+    }
+
+    private void EnsureWaveVisualCount(int count)
+    {
+        CollectExistingWaveAnchors();
+        EnsureLineCount(count);
+
+        while (waveAnchors.Count < count)
+        {
+            GameObject anchor = new GameObject("Electric Wave " + (waveAnchors.Count + 1));
+            anchor.transform.SetParent(transform, false);
+            waveAnchors.Add(anchor.transform);
+        }
+
+        waveVisuals.Clear();
+        for (int i = 0; i < count; i++)
+        {
+            Transform anchor = waveAnchors[i];
+            anchor.localPosition = new Vector3(0f, topY - i * waveSpacing, 0f);
+
+            GameObject visual = FindExistingVisual(anchor);
+            if (visual == null)
+            {
+                visual = CreateWaveVisual(anchor, i);
+            }
+
+            ConfigureVisualRendererOrder(visual);
+            waveVisuals.Add(visual);
+        }
+    }
+
+    private void CollectExistingWaveAnchors()
+    {
+        if (waveAnchors.Count > 0)
+        {
+            return;
+        }
+
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child.name.StartsWith("Electric Wave"))
+            {
+                waveAnchors.Add(child);
+            }
+        }
+    }
+
+    private GameObject FindExistingVisual(Transform anchor)
+    {
+        if (anchor.GetComponent<SpriteRenderer>() != null || anchor.GetComponent<Animator>() != null)
+        {
+            return anchor.gameObject;
+        }
+
+        for (int i = 0; i < anchor.childCount; i++)
+        {
+            Transform child = anchor.GetChild(i);
+            if (child.GetComponent<SpriteRenderer>() != null || child.GetComponentInChildren<SpriteRenderer>() != null)
+            {
+                return child.gameObject;
+            }
+        }
+
+        return null;
+    }
+
+    private GameObject CreateWaveVisual(Transform anchor, int index)
+    {
+        GameObject visual;
+        if (wavePrefab != null)
+        {
+            visual = Instantiate(wavePrefab, anchor);
+            visual.name = "Electric Wave Visual " + (index + 1);
+        }
+        else
+        {
+            visual = new GameObject("Electric Wave Visual " + (index + 1));
+            visual.transform.SetParent(anchor, false);
+        }
+
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localRotation = Quaternion.identity;
+        visual.transform.localScale = waveVisualScale;
+        return visual;
+    }
+
+    private void ConfigureWaveVisual(GameObject visual, float y, Color color, float fallbackWidth, bool animate)
+    {
+        if (visual == null)
+        {
+            return;
+        }
+
+        Transform anchor = visual.transform.parent != null ? visual.transform.parent : visual.transform;
+        anchor.localPosition = new Vector3((xMin + xMax) * 0.5f, y, 0f);
+        visual.transform.localPosition = Vector3.zero;
+        visual.transform.localRotation = Quaternion.identity;
+        visual.transform.localScale = waveVisualScale;
+        visual.SetActive(true);
+
+        SpriteRenderer[] renderers = visual.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            renderers[i].enabled = true;
+            renderers[i].color = color;
+            renderers[i].sortingOrder = sortingOrder;
+        }
+
+        Animator animator = visual.GetComponentInChildren<Animator>(true);
+        if (animator != null)
+        {
+            animator.enabled = animate;
+            if (animate)
+            {
+                animator.Play(0, 0, 0f);
+            }
+        }
+
+        int lineIndex = waveVisuals.IndexOf(visual);
+        if (lineIndex >= 0 && lineIndex < waveLines.Count)
+        {
+            ConfigureLine(waveLines[lineIndex], y, color, fallbackWidth);
+            waveLines[lineIndex].positionCount = wavePrefab == null ? 2 : 0;
+        }
+    }
+
+    private void ConfigureVisualRendererOrder(GameObject visual)
+    {
+        if (visual == null)
+        {
+            return;
+        }
+
+        SpriteRenderer[] renderers = visual.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            renderers[i].sortingOrder = sortingOrder;
         }
     }
 
@@ -210,6 +352,19 @@ public class ElectricWaveHazard : MonoBehaviour
             if (waveLines[i] != null)
             {
                 waveLines[i].positionCount = 0;
+            }
+        }
+    }
+
+    private void HideWaveVisuals()
+    {
+        HideLines();
+
+        for (int i = 0; i < waveVisuals.Count; i++)
+        {
+            if (waveVisuals[i] != null)
+            {
+                waveVisuals[i].SetActive(false);
             }
         }
     }

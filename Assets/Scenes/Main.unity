@@ -4458,6 +4458,8 @@ MonoBehaviour:
   activeSeconds: 0.35
   afterWaveSeconds: 0.18
   sortingOrder: 47
+  wavePrefab: {fileID: 922642263789948950, guid: 344a69ce3090c6749b1cf5a998f4eaa0, type: 3}
+  waveVisualScale: {x: 1, y: 0.55, z: 1}
 --- !u!1 &930002100
 GameObject:
   m_ObjectHideFlags: 0
@@ -7726,6 +7728,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1814851551}
   - component: {fileID: 1814851550}
+  - component: {fileID: 1814851552}
   - component: {fileID: 1814851549}
   - component: {fileID: 1814851548}
   m_Layer: 0
@@ -7750,6 +7753,18 @@ MonoBehaviour:
   gameManager: {fileID: 338883087}
   promptText: {fileID: 289937989}
   bodyRenderer: {fileID: 0}
+  attackAnimator: {fileID: 1814851552}
+  attackFrames:
+  - {fileID: 4231325849948023407, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: -6175554864498483511, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: -61356218794728361, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: -3782944767526404476, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: -8966125196071712700, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: 7130705958977639856, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: 8311189848149431891, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  - {fileID: -5078535484804313621, guid: 3de7de8dc0dd6604bab69ccb023da70c, type: 3}
+  attackFrameRate: 8
+  attackScaleMultiplier: 5.2
   idleHeadVisual: {fileID: 0}
   promptFontSize: 6
   promptBoxSize: {x: 8.5, y: 3.2}
@@ -7851,6 +7866,28 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!95 &1814851552
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1814851547}
+  m_Enabled: 0
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: fb26af5b746acad4bbfa6d29bcabdc6a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!4 &1814851551
 Transform:
   m_ObjectHideFlags: 0

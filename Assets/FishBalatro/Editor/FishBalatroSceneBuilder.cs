@@ -18,6 +18,7 @@ public static class FishBalatroSceneBuilder
     private const string BackgroundArtPath = Root + "/Art/Backgrounds";
     private const string PrefabPath = Root + "/Prefabs";
     private const string MainScenePath = "Assets/Scenes/Main.unity";
+    private const string SharkAttackSpriteSheetPath = "Assets/Player/Shark_Attack.png";
     private const float PixelsPerUnit = 16f;
     private const float UiPixelsPerUnit = 100f;
 
@@ -805,6 +806,8 @@ public static class FishBalatroSceneBuilder
         electricWave.warningSeconds = 0.35f;
         electricWave.activeSeconds = 0.35f;
         electricWave.afterWaveSeconds = 0.18f;
+        electricWave.wavePrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Electric_Wave_Long.prefab");
+        electricWave.waveVisualScale = new Vector3(1f, 0.55f, 1f);
 
         int waveCount = Mathf.Max(1, Mathf.FloorToInt((electricWave.topY - electricWave.bottomY) / electricWave.waveSpacing) + 1);
         for (int i = 0; i < waveCount; i++)
@@ -826,6 +829,13 @@ public static class FishBalatroSceneBuilder
         BigFishAlly ally = bigFishObject.AddComponent<BigFishAlly>();
         ally.gameManager = gameManager;
         ally.bodyRenderer = bigFishObject.GetComponent<SpriteRenderer>();
+        Animator attackAnimator = bigFishObject.AddComponent<Animator>();
+        attackAnimator.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>("Assets/Player/Shark_Movement_0.controller");
+        attackAnimator.enabled = false;
+        ally.attackAnimator = attackAnimator;
+        ally.attackFrames = LoadSpriteSheet(SharkAttackSpriteSheetPath, "Shark_Movement_");
+        ally.attackFrameRate = 8f;
+        ally.attackScaleMultiplier = 5.2f;
         ally.promptFontSize = 5f;
         ally.promptBoxSize = new Vector2(8.5f, 3.2f);
         ally.promptLocalPosition = new Vector3(0f, 1.25f, 0f);
@@ -1295,6 +1305,39 @@ public static class FishBalatroSceneBuilder
         }
 
         return null;
+    }
+
+    private static Sprite[] LoadSpriteSheet(string path, string namePrefix)
+    {
+        if (!File.Exists(path))
+        {
+            return Array.Empty<Sprite>();
+        }
+
+        AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
+        UnityEngine.Object[] assets = AssetDatabase.LoadAllAssetsAtPath(path);
+        List<Sprite> frames = new List<Sprite>();
+        for (int i = 0; i < assets.Length; i++)
+        {
+            if (assets[i] is Sprite sprite && sprite.name.StartsWith(namePrefix, StringComparison.Ordinal))
+            {
+                frames.Add(sprite);
+            }
+        }
+
+        frames.Sort((left, right) => ExtractSpriteFrameIndex(left.name, namePrefix).CompareTo(ExtractSpriteFrameIndex(right.name, namePrefix)));
+        return frames.ToArray();
+    }
+
+    private static int ExtractSpriteFrameIndex(string spriteName, string namePrefix)
+    {
+        if (!spriteName.StartsWith(namePrefix, StringComparison.Ordinal))
+        {
+            return int.MaxValue;
+        }
+
+        string suffix = spriteName.Substring(namePrefix.Length);
+        return int.TryParse(suffix, out int index) ? index : int.MaxValue;
     }
 
     private static void DrawHudPanel(Color32[] pixels, int width, int height, Color32 accent)
