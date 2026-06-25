@@ -255,7 +255,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1658003462}
   - component: {fileID: 1658003463}
-  - component: {fileID: 1658003464}
   m_Layer: 0
   m_Name: Intro3
   m_TagString: Untagged
@@ -301,23 +300,6 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &1658003464
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1658003461}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e0791a4af836504ab5f2d055f497c4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IntroMenuController
-  uiDocument: {fileID: 1658003463}
-  nextUI: {fileID: 0}
-  mainMenu: {fileID: 1822194606}
-  gameSceneName: GameScene
-  introNum: 3
 --- !u!1 &1822194605
 GameObject:
   m_ObjectHideFlags: 0
@@ -456,11 +438,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3e0791a4af836504ab5f2d055f497c4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroMenuController
-  uiDocument: {fileID: 1888834084}
-  nextUI: {fileID: 1917253556}
-  mainMenu: {fileID: 0}
-  gameSceneName: GameScene
-  introNum: 1
+  introPage1: {fileID: 1888834084}
+  introPage2: {fileID: 1917253555}
+  introPage3: {fileID: 1658003463}
+  mainMenu: {fileID: 1822194606}
 --- !u!1 &1917253553
 GameObject:
   m_ObjectHideFlags: 0
@@ -471,7 +452,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1917253554}
   - component: {fileID: 1917253555}
-  - component: {fileID: 1917253556}
   m_Layer: 0
   m_Name: Intro2
   m_TagString: Untagged
@@ -517,23 +497,6 @@ MonoBehaviour:
   m_PivotReferenceSize: 0
   m_Pivot: 0
   m_WorldSpaceCollider: {fileID: 0}
---- !u!114 &1917253556
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1917253553}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3e0791a4af836504ab5f2d055f497c4e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::IntroMenuController
-  uiDocument: {fileID: 1917253555}
-  nextUI: {fileID: 1658003464}
-  mainMenu: {fileID: 0}
-  gameSceneName: GameScene
-  introNum: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -14,6 +14,7 @@ public class PauseMenuController : MonoBehaviour
 
     private VisualElement root;
     private Button resumeButton;
+    private Button restartButton;
     private Button quitButton;
 
     private bool isPaused = false;
@@ -23,11 +24,17 @@ public class PauseMenuController : MonoBehaviour
         root = uiDocument.rootVisualElement;
 
         resumeButton = root.Q<Button>("resume-button");
+        restartButton = root.Q<Button>("restart-button");
         quitButton = root.Q<Button>("quit-button");
 
         if (resumeButton != null)
         {
             resumeButton.clicked += OnResumeButtonClicked;
+        }
+
+        if (restartButton != null)
+        {
+            restartButton.clicked += OnRestartButtonClicked;
         }
 
         if (quitButton != null)
@@ -42,10 +49,13 @@ public class PauseMenuController : MonoBehaviour
     private void OnDisable()
     {
         if (resumeButton != null)
-            resumeButton.clicked += OnResumeButtonClicked;
+            resumeButton.clicked -= OnResumeButtonClicked;
+
+        if (restartButton != null)
+            restartButton.clicked -= OnRestartButtonClicked;
 
         if (quitButton != null)
-            quitButton.clicked += OnQuitButtonClicked;
+            quitButton.clicked -= OnQuitButtonClicked;
 
         Time.timeScale = 1f;
         UnlockCursor();
@@ -80,7 +90,7 @@ public class PauseMenuController : MonoBehaviour
 
         UnlockCursor();
 
-        Debug.Log("Game Paused");
+        //Debug.Log("Game Paused");
     }
 
     private void ResumeGame()
@@ -92,7 +102,7 @@ public class PauseMenuController : MonoBehaviour
 
         LockCursorIfNeeded();
 
-        Debug.Log("Resume Game");
+        //Debug.Log("Resume Game");
     }
 
     private void HidePauseMenu()
@@ -117,6 +127,23 @@ public class PauseMenuController : MonoBehaviour
 #else
     Application.Quit();
 #endif
+    }
+    private void OnRestartButtonClicked()
+    {
+        RestartGame();
+    }
+
+    public void RestartGame()
+    {
+        Scene activeScene = SceneManager.GetActiveScene();
+        if (activeScene.buildIndex >= 0)
+        {
+            SceneManager.LoadScene(activeScene.buildIndex);
+        }
+        else
+        {
+            SceneManager.LoadScene(activeScene.name);
+        }
     }
 
     private void UnlockCursor()

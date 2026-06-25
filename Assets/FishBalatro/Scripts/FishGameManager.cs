@@ -140,7 +140,7 @@ public class FishGameManager : MonoBehaviour
         {
             if (ReadRestartPressed())
             {
-                RestartGame();
+                //RestartGame();
             }
 
             if (ui != null)
@@ -458,7 +458,11 @@ public class FishGameManager : MonoBehaviour
     {
         state = FishGameState.Caught;
         FishAudioManager.PlayCue(FishAudioCue.FishDie);
-        HighScoreController.AddScore(TotalScore);
+        EndGame();
+    }
+
+    public void EndGame()
+    {
         //statusText = "CAUGHT BY THE " + CaptureToolName.ToUpperInvariant() + "! Press R to restart.";
         //comboText = "Final score: " + totalScore;
 
@@ -485,16 +489,15 @@ public class FishGameManager : MonoBehaviour
         {
             fishingLine.SetLineVisible(false);
         }
-
-        // Game over is intentional here. The player restarts the scene with R
-        // instead of automatically recovering after touching a capture tool.
+        Time.timeScale = 0f;
     }
 
     private void WinGame(int finalAttackCost)
     {
+        HighScoreController.AddScore(TotalScore);
         state = FishGameState.Victory;
-        statusText = "COMMERCIAL SHIP DEFEATED! You cleared the jam build.";
-        comboText = "Final score: " + totalScore + " | Final attack cost paid: " + finalAttackCost;
+        //statusText = "COMMERCIAL SHIP DEFEATED! You cleared the jam build.";
+        //comboText = "Final score: " + totalScore + " | Final attack cost paid: " + finalAttackCost;
         alert = 0f;
         bossCaptureProgress = 0f;
 
@@ -518,8 +521,9 @@ public class FishGameManager : MonoBehaviour
 
         if (player != null)
         {
-            ShowPopup(player.transform.position + Vector3.up * 0.85f, "CLEAR!", new Color(0.8f, 1f, 0.55f));
+            //ShowPopup(player.transform.position + Vector3.up * 0.85f, "CLEAR!", new Color(0.8f, 1f, 0.55f));
         }
+        Time.timeScale = 0f;
     }
 
     private IEnumerator ReturnToNormalAfter(FishGameState temporaryState, float delay)

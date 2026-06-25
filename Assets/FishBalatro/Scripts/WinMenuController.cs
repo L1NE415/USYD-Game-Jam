@@ -6,18 +6,19 @@ using UnityEngine.UI;
 using UnityEngine.UIElements;
 using static UnityEngine.Rendering.DebugUI;
 
-public class QuitMenuController : MonoBehaviour
+public class WinMenuController : MonoBehaviour
 {
     [SerializeField] private UIDocument uiDocument;
 
     [Header("Return Target")]
-    [SerializeField] private FishGameManager game;
+    [SerializeField] private HighScoreController scoreMenuUI;
 
-    [SerializeField] private BaitSpawner baitSpawner;
+    [SerializeField] private FishGameManager game;
 
     [SerializeField] private FishPlayerController fishPlayerController;
 
     private UnityEngine.UIElements.Button restartButton;
+    private UnityEngine.UIElements.Button scoreButton;
     private UnityEngine.UIElements.Button quitButton;
     private Label titleLabel;
     private Label subtitleLabel;
@@ -37,11 +38,13 @@ public class QuitMenuController : MonoBehaviour
         root = uiDocument.rootVisualElement;
 
         restartButton = root.Q<UnityEngine.UIElements.Button>("restart-button");
+        scoreButton = root.Q<UnityEngine.UIElements.Button>("score-button");
         quitButton = root.Q<UnityEngine.UIElements.Button>("quit-button");
         titleLabel = root.Q<Label>("title-label");
         subtitleLabel = root.Q<Label>("subtitle-label");
 
         restartButton.clicked += OnRestartClicked;
+        scoreButton.clicked += OnScoreClicked;
         quitButton.clicked += OnQuitClicked;
 
         root.style.display = DisplayStyle.None;
@@ -52,23 +55,18 @@ public class QuitMenuController : MonoBehaviour
         if (restartButton != null)
             restartButton.clicked -= OnRestartClicked;
 
+        if (scoreButton != null)
+            scoreButton.clicked -= OnScoreClicked;
+
         if (quitButton != null)
             quitButton.clicked -= OnQuitClicked;
     }
 
     private void Update()
     {
-        if (fishPlayerController.gameManager.State == FishGameState.Caught)
+        if (fishPlayerController.gameManager.State == FishGameState.Victory)
         {
-            titleLabel.text = "You failed!";
-            subtitleLabel.text = "You were caught!";
-            root.style.display = DisplayStyle.Flex;
-            isShowing = true;
-        }
-        else if (baitSpawner.failed)
-        {
-            titleLabel.text = "You failed!";
-            subtitleLabel.text = "You failed to reach the target score!";
+            subtitleLabel.text = "Your Score: " + game.TotalScore;
             root.style.display = DisplayStyle.Flex;
             isShowing = true;
         }
@@ -77,6 +75,12 @@ public class QuitMenuController : MonoBehaviour
     private void OnRestartClicked()
     {
         game.RestartGame();
+    }
+
+    private void OnScoreClicked()
+    {
+        root.style.display = DisplayStyle.None;
+        scoreMenuUI.Show();
     }
 
     private void OnQuitClicked()

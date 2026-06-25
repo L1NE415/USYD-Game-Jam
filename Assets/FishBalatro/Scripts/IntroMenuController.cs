@@ -1,58 +1,83 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-public class IntroMenuController : MonoBehaviour
+public class IntroSequenceController : MonoBehaviour
 {
-    [SerializeField] private UIDocument uiDocument;
+    [Header("Intro Pages")]
+    [SerializeField] private UIDocument introPage1;
+    [SerializeField] private UIDocument introPage2;
+    [SerializeField] private UIDocument introPage3;
 
-    [SerializeField] private IntroMenuController nextUI;
+    [Header("After Intro")]
     [SerializeField] private MainMenuController mainMenu;
 
-    [SerializeField] private string gameSceneName = "GameScene";
+    private VisualElement page1Root;
+    private VisualElement page2Root;
+    private VisualElement page3Root;
 
-    private VisualElement root;
+    private int currentPage = 0;
 
-    private Button nextButton;
-
-    public int introNum;
-
-    private void OnEnable()
+    private void Start()
     {
-        root = uiDocument.rootVisualElement;
+        page1Root = introPage1.rootVisualElement;
+        page2Root = introPage2.rootVisualElement;
+        page3Root = introPage3.rootVisualElement;
 
-        nextButton = root.Q<Button>("next-button");
+        currentPage = 0;
+        ShowCurrentPage();
 
-        nextButton.clicked += OnNextClicked;
-
-        if (introNum == 1)
+        if (mainMenu != null)
         {
-            root.style.display = DisplayStyle.Flex;
-        }
-        else
-        {
-            root.style.display = DisplayStyle.None;
+            mainMenu.HideMenu();
         }
     }
 
-    private void OnDisable()
+    private void Update()
     {
-        if (nextButton != null)
-            nextButton.clicked -= OnNextClicked;
+        if (ReadNextPressed())
+        {
+            currentPage++;
+
+            if (currentPage >= 3)
+            {
+                FinishIntro();
+            }
+            else
+            {
+                ShowCurrentPage();
+            }
+        }
     }
 
-    private void OnNextClicked()
+    private void ShowCurrentPage()
     {
-        if (introNum != 3)
+        page1Root.style.display = currentPage == 0 ? DisplayStyle.Flex : DisplayStyle.None;
+        page2Root.style.display = currentPage == 1 ? DisplayStyle.Flex : DisplayStyle.None;
+        page3Root.style.display = currentPage == 2 ? DisplayStyle.Flex : DisplayStyle.None;
+    }
+
+    private void FinishIntro()
+    {
+        page1Root.style.display = DisplayStyle.None;
+        page2Root.style.display = DisplayStyle.None;
+        page3Root.style.display = DisplayStyle.None;
+
+        if (mainMenu != null)
         {
-            root.style.display = DisplayStyle.None;
-            nextUI.root.style.display = DisplayStyle.Flex;
-        }
-        else
-        {
-            root.style.display = DisplayStyle.None;
-            mainMenu.root.style.display = DisplayStyle.Flex;
+            mainMenu.ShowMenu();
         }
 
+        enabled = false;
+    }
+
+    private static bool ReadNextPressed()
+    {
+#if ENABLE_INPUT_SYSTEM && !ENABLE_LEGACY_INPUT_MANAGER
+        Keyboard keyboard = Keyboard.current;
+        return keyboard != null && keyboard.spaceKey.wasPressedThisFrame;
+#else
+        return Input.GetKeyDown(KeyCode.Space);
+#endif
     }
 }
