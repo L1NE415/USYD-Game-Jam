@@ -100,16 +100,16 @@ public class FishUIController : MonoBehaviour
         SetText(levelText, "Level " + game.Level);
         SetText(attackCostText, "Press E Attack: " + game.AttackCost);
         SetText(statusText, game.StatusText);
-        SetText(controlsText, "<color=#ff5a50>ESCAPE!</color>\nWASD / ARROWS   SWIM\nSHIFT   BURST\nE   ATTACK " + game.AttackCost + "\nR   RESTART");
+        SetText(controlsText, "<color=#ff5a50>ESCAPE!</color>\nWASD / ARROWS   SWIM\nSHIFT   BURST\nE   ATTACK " + game.AttackCost + "\nESC   PAUSE");
         SetText(comboText, game.ComboText);
         SetText(netSweepText, game.CaptureToolName + " " + Mathf.CeilToInt(game.CaptureToolProgress * 100f) + "%");
         if (game.IsVictory)
         {
-            SetText(gameOverText, "CONGRATULATIONS!\nCommercial fishing ship defeated\nFinal Score: " + game.TotalScore + "\nPress R to play again");
+            SetText(gameOverText, "CONGRATULATIONS!\nCommercial fishing ship defeated\nFinal Score: " + game.TotalScore + "\nRestart from pause menu");
         }
         else
         {
-            SetText(gameOverText, "CAUGHT BY " + game.CaptureToolName.ToUpperInvariant() + "\nFinal Score: " + game.TotalScore + "\nPress R to restart");
+            SetText(gameOverText, "CAUGHT BY " + game.CaptureToolName.ToUpperInvariant() + "\nFinal Score: " + game.TotalScore + "\nRestart from pause menu");
         }
 
         if (alertFill != null)

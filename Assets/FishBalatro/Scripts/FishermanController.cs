@@ -99,28 +99,14 @@ public class FishermanController : MonoBehaviour
             activeEntity.boatRenderer.color = reelWarning ? new Color(1f, 0.45f, 0.35f) : Color.white;
         }
 
-        if (activeEntity != null && activeEntity.nameText != null)
-        {
-            activeEntity.nameText.text = GetVariantName(variant) + " " + level;
-        }
+        SetVariantNameVisibility(false);
+        ApplyNoticeVisuals();
     }
 
     public void SetNotice(bool noticed)
     {
         this.noticed = noticed;
-        FishermanVariantEntity entity = activeEntity ?? GetEntity(Variant);
-
-        // Red tint and exclamation mark are the readable "danger" state.
-        if (entity != null && entity.exclamationText != null)
-        {
-            entity.exclamationText.gameObject.SetActive(noticed);
-            entity.exclamationText.text = noticed ? "!" : string.Empty;
-        }
-
-        if (entity != null && entity.fishermanRenderer != null)
-        {
-            entity.fishermanRenderer.color = noticed ? new Color(1f, 0.45f, 0.45f) : homeColor;
-        }
+        ApplyNoticeVisuals();
     }
 
     public void SetReelWarning(bool warning)
@@ -230,10 +216,13 @@ public class FishermanController : MonoBehaviour
         GetVariantArtLayout(type, out Vector3 boatPosition, out Vector3 boatScale, out Vector3 bodyPosition, out Vector3 bodyScale);
         changed |= EnsureVariantSprite(ref entity.boatRenderer, entity.root.transform, "Boat", boatPosition, boatScale, boatSprite, 10, Color.white);
         changed |= EnsureVariantSprite(ref entity.fishermanRenderer, entity.root.transform, "Fisherman Body", bodyPosition, bodyScale, bodySprite, 12, Color.white);
+        entity.fishermanRenderer.gameObject.SetActive(type != FishFishermanType.Boss);
         changed |= EnsureMarker(ref entity.lineAnchor, entity.root.transform, "Line Anchor", new Vector3(1.25f, 0.22f, 0f));
         changed |= EnsureMarker(ref entity.toolPropAnchor, entity.root.transform, GetToolPropName(type), new Vector3(0.72f, 0.66f, 0f));
-        changed |= EnsureText(ref entity.exclamationText, entity.root.transform, "Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70);
+        changed |= EnsureText(ref entity.exclamationText, entity.root.transform, "Notice", "!", new Vector3(0.5f, 1.55f, 0f), 7.6f, Color.red, 70);
         changed |= EnsureText(ref entity.nameText, entity.root.transform, "FishermanName", GetVariantName(type), new Vector3(-0.85f, 1.48f, 0f), 0.85f, Color.white, 65);
+        entity.exclamationText.gameObject.SetActive(false);
+        entity.nameText.gameObject.SetActive(false);
 
         if (type == FishFishermanType.Boss)
         {
@@ -262,8 +251,10 @@ public class FishermanController : MonoBehaviour
                 bodyScale = new Vector3(0.5396187f, 0.5491247f, 1f);
                 break;
             case FishFishermanType.Boss:
+                boatPosition = new Vector3(0f, -3f, 0f);
+                boatScale = Vector3.one;
                 bodyPosition = new Vector3(0.32f, -0.3f, 0f);
-                bodyScale = new Vector3(0.78f, 0.78f, 1f);
+                bodyScale = Vector3.zero;
                 break;
             default:
                 bodyPosition = new Vector3(0.29f, -0.19f, 0f);
@@ -425,6 +416,53 @@ public class FishermanController : MonoBehaviour
         if (entity != null && entity.root != null)
         {
             entity.root.SetActive(entity == active);
+        }
+    }
+
+    private void ApplyNoticeVisuals()
+    {
+        ApplyNoticeVisual(clawFisherman, clawFisherman == activeEntity && noticed);
+        ApplyNoticeVisual(electricFisherman, electricFisherman == activeEntity && noticed);
+        ApplyNoticeVisual(netFisherman, netFisherman == activeEntity && noticed);
+        ApplyNoticeVisual(bossFisherman, bossFisherman == activeEntity && noticed);
+    }
+
+    private void ApplyNoticeVisual(FishermanVariantEntity entity, bool showNotice)
+    {
+        if (entity == null)
+        {
+            return;
+        }
+
+        if (entity.exclamationText != null)
+        {
+            entity.exclamationText.gameObject.SetActive(showNotice);
+            entity.exclamationText.text = showNotice ? "!" : string.Empty;
+        }
+
+        if (entity.fishermanRenderer != null)
+        {
+            entity.fishermanRenderer.color = showNotice ? new Color(1f, 0.45f, 0.45f) : homeColor;
+        }
+    }
+
+    private void SetVariantNameVisibility(bool visible)
+    {
+        SetNameVisible(clawFisherman, visible);
+        SetNameVisible(electricFisherman, visible);
+        SetNameVisible(netFisherman, visible);
+        SetNameVisible(bossFisherman, visible);
+    }
+
+    private static void SetNameVisible(FishermanVariantEntity entity, bool visible)
+    {
+        if (entity != null && entity.nameText != null)
+        {
+            entity.nameText.gameObject.SetActive(visible);
+            if (!visible)
+            {
+                entity.nameText.text = string.Empty;
+            }
         }
     }
 

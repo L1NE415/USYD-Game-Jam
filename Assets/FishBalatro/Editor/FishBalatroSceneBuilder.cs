@@ -449,7 +449,7 @@ public static class FishBalatroSceneBuilder
         CreateBoundary("Wall Right", new Vector2(8.94f, -0.35f), new Vector2(0.4f, 8.2f));
         CreateBoundary("Sea Floor", new Vector2(0f, -5.1f), new Vector2(18f, 0.2f));
 
-        CreateWorldText("Tutorial", "Steal bait for score. Press E to attack the fisherman.", new Vector3(0f, -4.05f, 0f), 1.05f, new Color(0.78f, 0.96f, 1f), 60, null);
+        CreateWorldText("Tutorial", "Steal bait for score. Press E to attack the fisherman.", new Vector3(0f, -4.05f, 0f), 3f, new Color(0.78f, 0.96f, 1f), 60, null);
         return levelBackground;
     }
 
@@ -579,10 +579,10 @@ public static class FishBalatroSceneBuilder
         variantRoot.transform.SetParent(parent, false);
         variantRoot.transform.localPosition = Vector3.zero;
 
-        Color typeColor = GetFishermanVariantColor(type);
-        GameObject boatObject = CreateSpriteObject("Boat", sprites["boat"], new Vector3(0.01f, -0.19f, 0f), new Vector3(1.45f, 1.45f, 1f), 10, variantRoot.transform, Color.white);
-        boatObject.transform.localPosition = new Vector3(0.01f, -0.19f, 0f);
-
+        Sprite boatSprite = sprites["boat"];
+        RuntimeAnimatorController boatAnimatorController = null;
+        Vector3 boatPosition = new Vector3(0.01f, -0.19f, 0f);
+        Vector3 boatScale = new Vector3(1.45f, 1.45f, 1f);
         Vector3 bodyPosition = new Vector3(0.32f, -0.28f, 0f);
         Vector3 bodyScale = new Vector3(0.76f, 0.76f, 1f);
         if (type == FishFishermanType.Claw)
@@ -597,8 +597,26 @@ public static class FishBalatroSceneBuilder
         }
         else if (type == FishFishermanType.Boss)
         {
+            boatPosition = new Vector3(0f, -3f, 0f);
+            boatScale = Vector3.one;
             bodyPosition = new Vector3(0.32f, -0.3f, 0f);
-            bodyScale = new Vector3(0.78f, 0.78f, 1f);
+            bodyScale = Vector3.zero;
+
+            GameObject commercialBoatPrefab = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Prefabs/Commercial_Boat.prefab");
+            if (commercialBoatPrefab != null)
+            {
+                SpriteRenderer commercialBoatRenderer = commercialBoatPrefab.GetComponent<SpriteRenderer>();
+                if (commercialBoatRenderer != null && commercialBoatRenderer.sprite != null)
+                {
+                    boatSprite = commercialBoatRenderer.sprite;
+                }
+
+                Animator commercialBoatAnimator = commercialBoatPrefab.GetComponent<Animator>();
+                if (commercialBoatAnimator != null)
+                {
+                    boatAnimatorController = commercialBoatAnimator.runtimeAnimatorController;
+                }
+            }
         }
         else if (type == FishFishermanType.Electric)
         {
@@ -606,18 +624,30 @@ public static class FishBalatroSceneBuilder
             bodyScale = new Vector3(1f, 1f, 1f);
         }
 
+        GameObject boatObject = CreateSpriteObject("Boat", boatSprite, boatPosition, boatScale, 10, variantRoot.transform, Color.white);
+        boatObject.transform.localPosition = boatPosition;
+        if (boatAnimatorController != null)
+        {
+            Animator animator = boatObject.AddComponent<Animator>();
+            animator.runtimeAnimatorController = boatAnimatorController;
+        }
+
         GameObject bodyObject = CreateSpriteObject("Fisherman Body", sprites["fisherman"], bodyPosition, bodyScale, 12, variantRoot.transform, Color.white);
         bodyObject.transform.localPosition = bodyPosition;
+        bodyObject.SetActive(type != FishFishermanType.Boss);
 
         Transform anchor = CreateMarker("Line Anchor", new Vector3(1.25f, 0.22f, 0f), variantRoot.transform);
         Transform toolProp = CreateMarker(GetFishermanToolPropName(type), new Vector3(0.72f, 0.66f, 0f), variantRoot.transform);
 
-        TextMeshPro exclamation = CreateWorldText("Notice", "!", new Vector3(0.5f, 1.55f, 0f), 3.8f, Color.red, 70, variantRoot.transform);
+        TextMeshPro exclamation = CreateWorldText("Notice", "!", new Vector3(0.5f, 1.55f, 0f), 7.6f, Color.red, 70, variantRoot.transform);
         exclamation.transform.localPosition = new Vector3(0.5f, 1.55f, 0f);
+        exclamation.gameObject.SetActive(false);
 
         TextMeshPro name = CreateWorldText("FishermanName", FishermanController.GetVariantName(type), new Vector3(0f, 1.55f, 0f), 0.85f, Color.white, 65, variantRoot.transform);
         name.transform.localPosition = new Vector3(-0.85f, 1.48f, 0f);
         name.alignment = TextAlignmentOptions.Center;
+        name.text = string.Empty;
+        name.gameObject.SetActive(false);
 
         if (type == FishFishermanType.Boss)
         {
@@ -897,7 +927,7 @@ public static class FishBalatroSceneBuilder
 
         ui.attackCostText = CreateUiText(canvasObject.transform, "AttackCostText", "Press E Attack: 240", new Vector2(1f, 1f), new Vector2(-24f, -34f), new Vector2(430f, 46f), 28f, new Color(0.72f, 1f, 0.9f), TextAlignmentOptions.Right, font);
         ui.comboText = CreateUiText(canvasObject.transform, "ComboText", "", new Vector2(0.5f, 0f), new Vector2(0f, 112f), new Vector2(980f, 44f), 28f, new Color(1f, 0.92f, 0.56f), TextAlignmentOptions.Center, font);
-        ui.statusText = CreateUiText(canvasObject.transform, "StatusText", "Steal bait for score. Press E to attack the fisherman.", new Vector2(0.5f, 0f), new Vector2(0f, 58f), new Vector2(1120f, 48f), 30f, Color.white, TextAlignmentOptions.Center, font);
+        ui.statusText = CreateUiText(canvasObject.transform, "StatusText", "Steal bait for score. Press E to attack the fisherman.", new Vector2(0.5f, 0f), new Vector2(0f, 58f), new Vector2(1120f, 64f), 40f, Color.white, TextAlignmentOptions.Center, font);
 
         GameObject netPanel = new GameObject("NetSweepPanel", typeof(RectTransform));
         netPanel.transform.SetParent(canvasObject.transform, false);
@@ -1004,7 +1034,7 @@ public static class FishBalatroSceneBuilder
 
         GameObject panel = CreateSpriteObject("Panel", panelSprite, new Vector3(0.96f, -0.65f, 0f), new Vector3(1.25f, 1.15f, 1f), 6, root.transform, new Color(1f, 1f, 1f, 0.56f));
 
-        TextMeshPro text = CreateWorldText("Text", "<color=#ff5a50>ESCAPE!</color>\nWASD / ARROWS   SWIM\nSHIFT   BURST\nE   ATTACK\nR   RESTART", new Vector3(0.98f, -0.65f, 0f), 1.8f, Color.white, 7, root.transform);
+        TextMeshPro text = CreateWorldText("Text", "<color=#ff5a50>ESCAPE!</color>\nWASD / ARROWS   SWIM\nSHIFT   BURST\nE   ATTACK\nESC   PAUSE", new Vector3(0.98f, -0.65f, 0f), 1.8f, Color.white, 7, root.transform);
         text.font = font;
         text.richText = true;
         text.rectTransform.sizeDelta = new Vector2(3.2f, 1.2f);

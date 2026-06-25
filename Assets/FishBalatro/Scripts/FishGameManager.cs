@@ -463,9 +463,6 @@ public class FishGameManager : MonoBehaviour
 
     public void EndGame()
     {
-        //statusText = "CAUGHT BY THE " + CaptureToolName.ToUpperInvariant() + "! Press R to restart.";
-        //comboText = "Final score: " + totalScore;
-
         if (player != null)
         {
             //ShowPopup(player.transform.position, "CAUGHT!", Color.red);

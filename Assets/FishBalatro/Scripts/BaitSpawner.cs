@@ -54,7 +54,9 @@ public class BaitSpawner : MonoBehaviour
 
         if (activeBaits.Count < targetActiveBaits && spawnedThisLevel < levelBaitBudget && spawnTimer <= 0f)
         {
-            if (!SpawnBait())
+            int missingBaits = targetActiveBaits - activeBaits.Count;
+            int spawned = SpawnBaitBurst(missingBaits);
+            if (spawned == 0)
             {
                 // If the arena is too crowded for the spacing rules, wait a
                 // short beat and try again after the player moves/eats bait.
@@ -73,13 +75,7 @@ public class BaitSpawner : MonoBehaviour
         BeginLevelBudget();
         int openingCount = Mathf.Min(count, GetTargetActiveBaits(), levelBaitBudget);
 
-        for (int i = 0; i < openingCount; i++)
-        {
-            if (!SpawnBait())
-            {
-                break;
-            }
-        }
+        SpawnBaitBurst(openingCount);
 
         spawnTimer = spawnInterval;
     }
@@ -168,6 +164,25 @@ public class BaitSpawner : MonoBehaviour
         activeBaits.Add(bait);
         spawnedThisLevel++;
         return true;
+    }
+
+    private int SpawnBaitBurst(int requestedCount)
+    {
+        int remainingBudget = levelBaitBudget - spawnedThisLevel;
+        int spawnCount = Mathf.Min(requestedCount, remainingBudget);
+        int spawned = 0;
+
+        for (int i = 0; i < spawnCount; i++)
+        {
+            if (!SpawnBait())
+            {
+                break;
+            }
+
+            spawned++;
+        }
+
+        return spawned;
     }
 
     private bool TryPickSpawnPosition(out Vector3 position)
