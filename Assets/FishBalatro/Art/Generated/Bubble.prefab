@@ -127,7 +127,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8fdc90bb22d4af439ab330339174c6e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bubble
-  riseSpeed: 5.5
-  swayAmount: 0.2
-  swaySpeed: 2
+  riseSpeed: 0.55
+  swayAmount: 0.12
+  swaySpeed: 1.2
+  surfaceY: 3.55
   lifeTime: 6.5

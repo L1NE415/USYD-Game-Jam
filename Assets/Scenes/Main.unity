@@ -2955,8 +2955,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BubbleSpawner
   bubblePrefab: {fileID: 1777082742042445139, guid: 69c44b554aeb9374180622c7c3cee548, type: 3}
-  spawnInterval: 0.01
+  spawnInterval: 0.85
   spawnRangeX: 0.2
+  spawnXRange: {x: -8.4, y: 8.4}
+  seaFloorY: -4.85
+  waterSurfaceY: 3.55
+  riseSpeedRange: {x: 0.42, y: 0.62}
+  bubbleLifetimeRange: {x: 5, y: 8}
+  bubbleScaleRange: {x: 0.65, y: 1.05}
+  swayAmountRange: {x: 0.08, y: 0.16}
+  swaySpeedRange: {x: 0.9, y: 1.4}
+  maxActiveBubbles: 26
+  useSingleSharedSpawner: 1
 --- !u!4 &820722793
 Transform:
   m_ObjectHideFlags: 0
@@ -5383,8 +5393,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BubbleSpawner
   bubblePrefab: {fileID: 1777082742042445139, guid: 69c44b554aeb9374180622c7c3cee548, type: 3}
-  spawnInterval: 0.01
+  spawnInterval: 0.85
   spawnRangeX: 0.2
+  spawnXRange: {x: -8.4, y: 8.4}
+  seaFloorY: -4.85
+  waterSurfaceY: 3.55
+  riseSpeedRange: {x: 0.42, y: 0.62}
+  bubbleLifetimeRange: {x: 5, y: 8}
+  bubbleScaleRange: {x: 0.65, y: 1.05}
+  swayAmountRange: {x: 0.08, y: 0.16}
+  swaySpeedRange: {x: 0.9, y: 1.4}
+  maxActiveBubbles: 26
+  useSingleSharedSpawner: 1
 --- !u!4 &1139316563
 Transform:
   m_ObjectHideFlags: 0
@@ -9434,8 +9454,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BubbleSpawner
   bubblePrefab: {fileID: 1777082742042445139, guid: 69c44b554aeb9374180622c7c3cee548, type: 3}
-  spawnInterval: 0.01
+  spawnInterval: 0.85
   spawnRangeX: 0.2
+  spawnXRange: {x: -8.4, y: 8.4}
+  seaFloorY: -4.85
+  waterSurfaceY: 3.55
+  riseSpeedRange: {x: 0.42, y: 0.62}
+  bubbleLifetimeRange: {x: 5, y: 8}
+  bubbleScaleRange: {x: 0.65, y: 1.05}
+  swayAmountRange: {x: 0.08, y: 0.16}
+  swaySpeedRange: {x: 0.9, y: 1.4}
+  maxActiveBubbles: 26
+  useSingleSharedSpawner: 1
 --- !u!4 &2078857181
 Transform:
   m_ObjectHideFlags: 0
