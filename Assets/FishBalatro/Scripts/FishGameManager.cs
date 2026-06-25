@@ -30,6 +30,7 @@ public class FishGameManager : MonoBehaviour
     public FishUIController ui;
     public TMP_FontAsset popupFont;
     public Transform playerRespawn;
+    public LevelBackgroundController levelBackground;
 
     [Header("Scoring")]
     // Attack cost is level-based so later fishermen need more stolen bait before
@@ -123,6 +124,7 @@ public class FishGameManager : MonoBehaviour
         }
 
         ApplyFishermanVariant();
+        ApplyLevelBackground();
 
         if (baitSpawner != null)
         {
@@ -262,6 +264,7 @@ public class FishGameManager : MonoBehaviour
 
         level = nextLevel;
         ApplyFishermanVariant();
+        ApplyLevelBackground();
         statusText = IsBossLevel
             ? "Final Boss: commercial fishing ship arrives with every capture tool."
             : "Level " + level + ": " + CaptureToolName + " fisherman arrives.";
@@ -533,6 +536,14 @@ public class FishGameManager : MonoBehaviour
         if (fisherman != null)
         {
             fisherman.SetVariant(CurrentFishermanType, level);
+        }
+    }
+
+    private void ApplyLevelBackground()
+    {
+        if (levelBackground != null)
+        {
+            levelBackground.ApplyLevel(level);
         }
     }
 

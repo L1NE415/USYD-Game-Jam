@@ -15,6 +15,7 @@ public static class FishBalatroSceneBuilder
 {
     private const string Root = "Assets/FishBalatro";
     private const string ArtPath = Root + "/Art/Generated";
+    private const string BackgroundArtPath = Root + "/Art/Backgrounds";
     private const string PrefabPath = Root + "/Prefabs";
     private const string MainScenePath = "Assets/Scenes/Main.unity";
     private const float PixelsPerUnit = 16f;
@@ -37,7 +38,7 @@ public static class FishBalatroSceneBuilder
         gameManager.popupFont = LoadFont();
 
         CreateCamera();
-        CreateEnvironment(sprites);
+        LevelBackgroundController levelBackground = CreateEnvironment(sprites);
 
         FishermanController fisherman = CreateFisherman(sprites);
         FishPlayerController player = CreatePlayer(sprites);
@@ -62,6 +63,7 @@ public static class FishBalatroSceneBuilder
         gameManager.bigFish = bigFish;
         gameManager.ui = ui;
         gameManager.playerRespawn = respawn;
+        gameManager.levelBackground = levelBackground;
 
         player.gameManager = gameManager;
         spawner.gameManager = gameManager;
@@ -97,6 +99,7 @@ public static class FishBalatroSceneBuilder
     private static void EnsureFolders()
     {
         Directory.CreateDirectory(ArtPath);
+        Directory.CreateDirectory(BackgroundArtPath);
         Directory.CreateDirectory(PrefabPath);
         Directory.CreateDirectory("Assets/Scenes");
     }
@@ -431,12 +434,12 @@ public static class FishBalatroSceneBuilder
         camera.transform.position = new Vector3(0f, 0f, -10f);
     }
 
-    private static void CreateEnvironment(Dictionary<string, Sprite> sprites)
+    private static LevelBackgroundController CreateEnvironment(Dictionary<string, Sprite> sprites)
     {
         // The MVP arena is intentionally simple: water bounds, surface danger,
         // and tutorial text. Obstacles can be added later once the core loop is
         // tuned.
-        CreateSpriteObject("Water Background", sprites["water_panel"], Vector3.zero, new Vector3(18f, 10.4f, 1f), -20);
+        LevelBackgroundController levelBackground = CreateLevelBackground(sprites);
         CreateEnvironmentAnimationProps(sprites);
 
         GameObject surface = CreateSpriteObject("Water Surface", sprites["ui_square"], new Vector3(0f, 3.6f, 0f), new Vector3(17.5f, 0.08f, 1f), 2);
@@ -447,6 +450,35 @@ public static class FishBalatroSceneBuilder
         CreateBoundary("Sea Floor", new Vector2(0f, -5.1f), new Vector2(18f, 0.2f));
 
         CreateWorldText("Tutorial", "Steal bait for score. Press E to attack the fisherman.", new Vector3(0f, -4.05f, 0f), 1.05f, new Color(0.78f, 0.96f, 1f), 60, null);
+        return levelBackground;
+    }
+
+    private static LevelBackgroundController CreateLevelBackground(Dictionary<string, Sprite> sprites)
+    {
+        Sprite[] levelBackgrounds = LoadLevelBackgrounds();
+        Sprite initialBackground = levelBackgrounds[0] != null ? levelBackgrounds[0] : sprites["water_panel"];
+        GameObject backgroundObject = CreateSpriteObject("Water Background", initialBackground, Vector3.zero, new Vector3(1.1575f, 0.9766f, 1f), -20);
+        SpriteRenderer renderer = backgroundObject.GetComponent<SpriteRenderer>();
+
+        LevelBackgroundController controller = backgroundObject.AddComponent<LevelBackgroundController>();
+        controller.backgroundRenderer = renderer;
+        controller.levelBackgrounds = levelBackgrounds;
+        controller.extraWorldPadding = 0f;
+        controller.ApplyLevel(1);
+        return controller;
+    }
+
+    private static Sprite[] LoadLevelBackgrounds()
+    {
+        Sprite[] backgrounds =
+        {
+            AssetDatabase.LoadAssetAtPath<Sprite>(BackgroundArtPath + "/level_1_morning.png"),
+            AssetDatabase.LoadAssetAtPath<Sprite>(BackgroundArtPath + "/level_2_noon.png"),
+            AssetDatabase.LoadAssetAtPath<Sprite>(BackgroundArtPath + "/level_3_dusk.png"),
+            AssetDatabase.LoadAssetAtPath<Sprite>(BackgroundArtPath + "/level_4_night.png")
+        };
+
+        return backgrounds;
     }
 
     private static void CreateEnvironmentAnimationProps(Dictionary<string, Sprite> sprites)
