@@ -1,0 +1,399 @@
+fileFormatVersion: 2
+guid: 862a8fdde96befc448f7196cdfcb1113
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 112009005602815351
+    second: Seaweed_Sheet_0
+  - first:
+      213: -8429220455220193484
+    second: Seaweed_Sheet_1
+  - first:
+      213: 8635986369786172818
+    second: Seaweed_Sheet_2
+  - first:
+      213: 6990363803563218716
+    second: Seaweed_Sheet_3
+  - first:
+      213: -4869639687220738163
+    second: Seaweed_Sheet_4
+  - first:
+      213: 6666125006587688175
+    second: Seaweed_Sheet_5
+  - first:
+      213: 1989742204478883324
+    second: Seaweed_Sheet_6
+  - first:
+      213: 4652431644773663267
+    second: Seaweed_Sheet_7
+  - first:
+      213: 2684401596457332658
+    second: Seaweed_Sheet_8
+  - first:
+      213: -7468675427221930305
+    second: Seaweed_Sheet_9
+  - first:
+      213: -696520596868293272
+    second: Seaweed_Sheet_10
+  - first:
+      213: -20744558095049598
+    second: Seaweed_Sheet_11
+  - first:
+      213: 6706902939903232042
+    second: Seaweed_Sheet_12
+  - first:
+      213: 8729751238980166586
+    second: Seaweed_Sheet_13
+  - first:
+      213: 8935381008853538388
+    second: Seaweed_Sheet_14
+  - first:
+      213: 4461803090823426772
+    second: Seaweed_Sheet_15
+  - first:
+      213: 8417841144940609961
+    second: Seaweed_Sheet_16
+  - first:
+      213: 3582808788417144005
+    second: Seaweed_Sheet_17
+  - first:
+      213: 6584889252351381469
+    second: Seaweed_Sheet_18
+  - first:
+      213: 4291535158555890343
+    second: Seaweed_Sheet_19
+  - first:
+      213: -5077185652615566223
+    second: Seaweed_Sheet_20
+  - first:
+      213: 1873571747615748178
+    second: Seaweed_Sheet_21
+  - first:
+      213: 31605196231820744
+    second: Seaweed_Sheet_22
+  - first:
+      213: -1215851802309592966
+    second: Seaweed_Sheet_23
+  - first:
+      213: 478418219621211387
+    second: Seaweed_Sheet_24
+  - first:
+      213: -7759732841450287926
+    second: Seaweed_Sheet_25
+  - first:
+      213: 4232284527321665349
+    second: Seaweed_Sheet_26
+  - first:
+      213: -5830050535866180202
+    second: Seaweed_Sheet_27
+  - first:
+      213: 6259479850429128202
+    second: Seaweed_Sheet_28
+  - first:
+      213: -1383686148614080742
+    second: Seaweed_Sheet_29
+  - first:
+      213: 4422597842570741590
+    second: Seaweed_Sheet_30
+  - first:
+      213: 8002827802314668594
+    second: Seaweed_Sheet_31
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 32
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Seaweed_Sheet_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77db99ed89fed8100800000000000000
+      internalID: 112009005602815351
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_1
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 437d429e7a4650b80800000000000000
+      internalID: -8429220455220193484
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_2
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 295583019df29d770800000000000000
+      internalID: 8635986369786172818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_3
+      rect:
+        serializedVersion: 2
+        x: 192
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c175222c7d2c20160800000000000000
+      internalID: 6990363803563218716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_4
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d87401341809b6cb0800000000000000
+      internalID: -4869639687220738163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_5
+      rect:
+        serializedVersion: 2
+        x: 320
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fe4f106ff55d28c50800000000000000
+      internalID: 6666125006587688175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_6
+      rect:
+        serializedVersion: 2
+        x: 384
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cf5019c2efbfc9b10800000000000000
+      internalID: 1989742204478883324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Seaweed_Sheet_7
+      rect:
+        serializedVersion: 2
+        x: 448
+        y: 0
+        width: 64
+        height: 64
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 32245886ee1c09040800000000000000
+      internalID: 4652431644773663267
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":1,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Seaweed_Sheet_0: 112009005602815351
+      Seaweed_Sheet_1: -8429220455220193484
+      Seaweed_Sheet_2: 8635986369786172818
+      Seaweed_Sheet_3: 6990363803563218716
+      Seaweed_Sheet_4: -4869639687220738163
+      Seaweed_Sheet_5: 6666125006587688175
+      Seaweed_Sheet_6: 1989742204478883324
+      Seaweed_Sheet_7: 4652431644773663267
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
